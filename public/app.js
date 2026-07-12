@@ -115,6 +115,14 @@ audio.addEventListener('error', () => {
   reconnectTimer = setTimeout(startPlayback, 3000);
 });
 
-await loadStations();
-await refreshStatus();
-setInterval(refreshStatus, 2000);
+async function init() {
+  await loadStations();
+  await refreshStatus();
+  setInterval(refreshStatus, 2000);
+}
+
+init().catch((error) => {
+  ediBadge.textContent = 'Web API offline';
+  ediBadge.className = 'badge bad';
+  message.textContent = error.message;
+});

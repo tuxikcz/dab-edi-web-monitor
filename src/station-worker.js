@@ -116,7 +116,7 @@ export class StationWorker {
     this.state = this.source.connected ? 'starting' : 'waiting_edi';
 
     const dablinArgs = [
-      '-f', 'edi',
+      '-f', this.config.edi.format,
       '-I',
       '-F',
       ...selectorArgs(this.station.selector),

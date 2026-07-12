@@ -26,6 +26,10 @@ export function loadConfig(configPath) {
   if (!config.edi || typeof config.edi.host !== 'string' || !isPositiveInteger(config.edi.port)) {
     fail('edi.host a edi.port jsou povinne');
   }
+  config.edi.format ??= 'edi';
+  if (!['edi', 'eti'].includes(config.edi.format)) {
+    fail('edi.format musi byt "edi" nebo "eti"');
+  }
 
   if (!config.binaries || typeof config.binaries.dablin !== 'string' || typeof config.binaries.ffmpeg !== 'string') {
     fail('binaries.dablin a binaries.ffmpeg jsou povinne');

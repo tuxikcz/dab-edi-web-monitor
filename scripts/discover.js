@@ -11,9 +11,10 @@ const { config } = loadConfig(configPath);
 const seconds = Number(process.env.DISCOVER_SECONDS ?? 20);
 
 console.log(`Spoustim diagnostiku DABlinu na ${config.edi.host}:${config.edi.port} po dobu ${seconds} s.`);
+console.log(`Format vstupu pro DABlin: ${config.edi.format}`);
 console.log('Vystup je zavisly na verzi DABlinu; hledejte service label a SID.');
 
-const dablin = spawn(config.binaries.dablin, ['-f', 'edi', '-I', '-F', '-p'], {
+const dablin = spawn(config.binaries.dablin, ['-f', config.edi.format, '-I', '-F', '-p'], {
   detached: true,
   stdio: ['pipe', 'ignore', 'pipe']
 });
@@ -21,6 +22,10 @@ const socket = net.createConnection({ host: config.edi.host, port: config.edi.po
 
 dablin.stderr.pipe(process.stdout);
 socket.pipe(dablin.stdin);
+dablin.stdin.on('error', (error) => {
+  if (error.code !== 'EPIPE') console.error(`DABlin stdin chyba: ${error.message}`);
+  socket.destroy();
+});
 
 function stop(code = 0) {
   socket.destroy();

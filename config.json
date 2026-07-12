@@ -6,13 +6,14 @@
   "edi": {
     "host": "93.185.96.156",
     "port": 15000,
+    "format": "eti",
     "connectTimeoutMs": 5000,
     "dataTimeoutMs": 7000,
     "reconnectMinMs": 1000,
     "reconnectMaxMs": 15000
   },
   "binaries": {
-    "dablin": "/usr/bin/dablin",
+    "dablin": "/usr/local/bin/dablin",
     "ffmpeg": "/usr/bin/ffmpeg"
   },
   "audio": {

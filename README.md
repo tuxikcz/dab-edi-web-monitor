@@ -33,11 +33,44 @@ Web pak posloucha na:
 http://IP_SERVERU:8088/
 ```
 
+Pouze MP3 stream bez weboveho rozhrani spustite:
+
+```bash
+npm run stream
+```
+
+Pro jednu nakonfigurovanou stanici je stream dostupny na:
+
+```text
+http://IP_SERVERU:8088/stream.mp3
+```
+
+Pro vice stanic pouzijte ID z `config.json`:
+
+```text
+http://IP_SERVERU:8088/stream/first.mp3
+http://IP_SERVERU:8088/first.mp3
+```
+
+V externim HTML5 prehravaci pak staci:
+
+```html
+<audio controls src="http://IP_SERVERU:8088/stream.mp3"></audio>
+```
+
 Vychozi endpoint je nastaven na:
 
 ```text
 93.185.96.156:15000
 ```
+
+Tento endpoint posila ETI-NI data, proto ma v `config.json` nastaveno:
+
+```json
+"format": "eti"
+```
+
+Pro skutecny EDI AF vstup pouzijte `"format": "edi"`.
 
 ## Nastaveni stanic
 
