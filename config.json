@@ -22,7 +22,7 @@
     "channels": 2
   },
   "stream": {
-    "stationIndex": 0
+    "discoverSeconds": 8
   },
   "watchdog": {
     "startupGraceMs": 12000,
@@ -44,7 +44,8 @@
       "id": "first",
       "name": "Prvni sluzba multiplexu",
       "selector": {
-        "type": "first"
+        "type": "serviceIndex",
+        "value": 1
       }
     }
   ]

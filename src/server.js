@@ -6,6 +6,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { loadConfig } from './config.js';
 import { EdiSource } from './edi-source.js';
 import { StationWorker } from './station-worker.js';
+import { resolveServiceIndexSelectors } from './service-discovery.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, '../public');
@@ -76,15 +77,16 @@ function staticFile(res, relativePath) {
   res.writeHead(200, {
     'Content-Type': types[ext] ?? 'application/octet-stream',
     'Content-Length': data.length,
-    'Cache-Control': ext === '.html' || ext === '.js' ? 'no-store' : 'public, max-age=300'
+    'Cache-Control': ext === '.html' || ext === '.js' || ext === '.css' ? 'no-store' : 'public, max-age=300'
   });
   res.end(data);
 }
 
 log.info(`konfigurace: ${resolvedPath}`);
+const stations = await resolveServiceIndexSelectors(config, config.stations, log);
 const source = new EdiSource(config.edi, log);
 const workers = new Map();
-for (const station of config.stations) {
+for (const station of stations) {
   const worker = new StationWorker(station, source, config, log);
   workers.set(station.id, worker);
   worker.start();
@@ -113,7 +115,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === 'GET' && url.pathname === '/api/stations') {
-    json(res, 200, config.stations.map(({ id, name, selector }) => ({ id, name, selector })));
+    json(res, 200, stations.map(({ id, name, selector }) => ({ id, name, selector })));
     return;
   }
 

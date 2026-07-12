@@ -54,7 +54,7 @@ export function loadConfig(configPath) {
     }
 
     const selector = station.selector;
-    if (!selector || !['first', 'sid', 'label'].includes(selector.type)) {
+    if (!selector || !['first', 'sid', 'label', 'serviceIndex'].includes(selector.type)) {
       fail(`stanice ${station.id} ma neplatny selector.type`);
     }
     if (selector.type === 'sid' && typeof selector.value !== 'string') {
@@ -63,19 +63,29 @@ export function loadConfig(configPath) {
     if (selector.type === 'label' && typeof selector.value !== 'string') {
       fail(`stanice ${station.id}: selector label vyzaduje value`);
     }
+    if (selector.type === 'serviceIndex' && !isPositiveInteger(selector.value)) {
+      fail(`stanice ${station.id}: selector serviceIndex vyzaduje kladne cislo, napr. 1`);
+    }
   }
 
   config.stream ??= {};
+  config.stream.discoverSeconds ??= 8;
+  if (!isPositiveInteger(config.stream.discoverSeconds)) {
+    fail('stream.discoverSeconds musi byt kladne cele cislo');
+  }
   config.stream.stationIndex ??= null;
-  if (
-    config.stream.stationIndex !== null &&
-    (
-      !Number.isInteger(config.stream.stationIndex) ||
-      config.stream.stationIndex < 0 ||
-      config.stream.stationIndex >= config.stations.length
-    )
-  ) {
-    fail(`stream.stationIndex musi byt null nebo index 0 az ${config.stations.length - 1}`);
+  config.stream.stationArrayIndex = null;
+  if (config.stream.stationIndex !== null) {
+    if (!Number.isInteger(config.stream.stationIndex)) {
+      fail(`stream.stationIndex musi byt null nebo cislo 1 az ${config.stations.length}`);
+    }
+    if (config.stream.stationIndex === 0) {
+      config.stream.stationArrayIndex = 0;
+    } else if (config.stream.stationIndex >= 1 && config.stream.stationIndex <= config.stations.length) {
+      config.stream.stationArrayIndex = config.stream.stationIndex - 1;
+    } else {
+      fail(`stream.stationIndex musi byt null nebo cislo 1 az ${config.stations.length}`);
+    }
   }
 
   config.edi.connectTimeoutMs ??= 5000;

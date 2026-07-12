@@ -5,6 +5,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { loadConfig } from './config.js';
 import { EdiSource } from './edi-source.js';
 import { StationWorker } from './station-worker.js';
+import { resolveServiceIndexSelectors } from './service-discovery.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const configArg = process.argv.indexOf('--config');
@@ -100,12 +101,13 @@ function stationFromPath(pathname) {
 }
 
 log.info(`konfigurace: ${resolvedPath}`);
-const streamStations = config.stream.stationIndex === null
-  ? config.stations
-  : [config.stations[config.stream.stationIndex]];
-const defaultStationId = config.stream.stationIndex === null
-  ? (config.stations.length === 1 ? config.stations[0].id : null)
-  : config.stations[config.stream.stationIndex].id;
+const stations = await resolveServiceIndexSelectors(config, config.stations, log);
+const streamStations = config.stream.stationArrayIndex === null
+  ? stations
+  : [stations[config.stream.stationArrayIndex]];
+const defaultStationId = config.stream.stationArrayIndex === null
+  ? (stations.length === 1 ? stations[0].id : null)
+  : stations[config.stream.stationArrayIndex].id;
 const source = new EdiSource(config.edi, log);
 const workers = new Map();
 for (const station of streamStations) {
@@ -139,6 +141,7 @@ const server = http.createServer((req, res) => {
       time: Date.now(),
       defaultStream: defaultStationId ? '/stream.mp3' : null,
       stationIndex: config.stream.stationIndex,
+      stationArrayIndex: config.stream.stationArrayIndex,
       streams: Object.fromEntries(
         [...workers.values()].map((worker) => [
           worker.station.id,
@@ -178,6 +181,14 @@ const server = http.createServer((req, res) => {
       'DAB MP3 stream server',
       '',
       ...streamStations.map((station) => `${station.name}: /stream/${station.id}.mp3`),
+      '',
+      ...[...workers.values()].map((worker) => {
+        const status = worker.status();
+        const service = status.currentService;
+        const name = service?.label || service?.shortLabel || status.name;
+        const format = [service?.codec, service?.bitrate].filter(Boolean).join(', ');
+        return `Playing ${status.id}: ${name}${service?.sid ? ` (${service.sid})` : ''}${format ? ` - ${format}` : ''}`;
+      }),
       '',
       defaultStationId ? `Default stream: /stream.mp3` : null,
       'Status: /status',

@@ -46,6 +46,16 @@ export class StationWorker {
     this.lastRestartReason = null;
     this.lastDablinMessage = null;
     this.lastFfmpegMessage = null;
+    this.currentService = {
+      sid: station.discoveredService?.sid ?? (station.selector.type === 'sid' ? station.selector.value : null),
+      label: station.discoveredService?.label ?? null,
+      shortLabel: station.discoveredService?.shortLabel ?? null,
+      subChannelId: station.discoveredService?.subChannelId ?? null,
+      codec: null,
+      sampleRate: null,
+      channels: null,
+      bitrate: null
+    };
     this.clients = new Set();
 
     this.onEdiData = (chunk) => this.#pushEdi(chunk);
@@ -216,13 +226,41 @@ export class StationWorker {
       const lines = pending.split(/\r?\n/);
       pending = lines.pop() ?? '';
       for (const rawLine of lines) {
-        const line = rawLine.replace(/\x1b\[[0-9;]*m/g, '').trim();
+        const line = rawLine
+          .replace(/\x1b\[[0-9;]*m/g, '')
+          .replace(/\x1b\][^\x07]*\x07/g, '')
+          .trim();
         if (!line) continue;
         if (sourceName === 'dablin') this.lastDablinMessage = line;
         else this.lastFfmpegMessage = line;
+        if (sourceName === 'dablin') this.#captureDablinMetadata(line);
         this.log.error(`[${this.station.id}/${sourceName}] ${line}`);
       }
     });
+  }
+
+  #captureDablinMetadata(line) {
+    const playingMatch = line.match(/EnsemblePlayer: playing sub-channel\s+(\d+)/);
+    if (playingMatch) {
+      this.currentService.subChannelId = Number(playingMatch[1]);
+      return;
+    }
+
+    const formatMatch = line.match(/EnsemblePlayer: format: ([^,]+),\s+(\d+) kHz\s+([^@]+?)\s+@\s+(\d+)\s+kBit\/s/);
+    if (formatMatch) {
+      this.currentService.codec = formatMatch[1].trim();
+      this.currentService.sampleRate = Number(formatMatch[2]) * 1000;
+      this.currentService.channels = formatMatch[3].trim();
+      this.currentService.bitrate = `${formatMatch[4]} kBit/s`;
+      return;
+    }
+
+    const labelMatch = line.match(/FICDecoder: SId (0x[0-9A-Fa-f]+): programme service label '([^']*)' \('([^']*)'\)/);
+    if (labelMatch && (!this.currentService.sid || labelMatch[1].toLowerCase() === this.currentService.sid.toLowerCase())) {
+      this.currentService.sid = labelMatch[1];
+      this.currentService.label = labelMatch[2];
+      this.currentService.shortLabel = labelMatch[3];
+    }
   }
 
   #pushEdi(chunk) {
@@ -342,6 +380,7 @@ export class StationWorker {
       lastMp3At: this.lastMp3At || null,
       bytesPcm: this.bytesPcm,
       bytesMp3: this.bytesMp3,
+      currentService: this.currentService,
       clients: this.clients.size,
       restarts: this.restarts,
       lastRestartReason: this.lastRestartReason,

@@ -35,6 +35,20 @@ function selectedStatus() {
   return status?.stations?.find((item) => item.id === stationSelect.value);
 }
 
+function serviceName(service, fallback) {
+  return service?.label || service?.shortLabel || service?.sid || fallback || '—';
+}
+
+function serviceFormat(service) {
+  const parts = [
+    service?.codec,
+    service?.sampleRate ? `${Math.round(service.sampleRate / 1000)} kHz` : null,
+    service?.channels,
+    service?.bitrate
+  ].filter(Boolean);
+  return parts.join(', ') || '—';
+}
+
 async function loadStations() {
   const response = await fetch('/api/stations', { cache: 'no-store' });
   stations = await response.json();
@@ -63,6 +77,10 @@ async function refreshStatus() {
     if (station) {
       stationStatus.innerHTML = rows([
         ['Stav', station.state],
+        ['Hraje', serviceName(station.currentService, station.name)],
+        ['SID', station.currentService?.sid ?? '—'],
+        ['SubChId', station.currentService?.subChannelId ?? '—'],
+        ['Formát', serviceFormat(station.currentService)],
         ['Poslední PCM', age(station.lastPcmAt)],
         ['Poslední MP3', age(station.lastMp3At)],
         ['Posluchači', station.clients],
