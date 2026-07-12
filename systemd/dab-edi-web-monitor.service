@@ -1,0 +1,23 @@
+[Unit]
+Description=DAB EDI web monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=dabmonitor
+Group=dabmonitor
+WorkingDirectory=/opt/dab-edi-web-monitor
+ExecStart=/usr/bin/node /opt/dab-edi-web-monitor/src/server.js --config /etc/dab-edi-web-monitor/config.json
+Restart=always
+RestartSec=2
+KillMode=control-group
+TimeoutStopSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/dab-edi-web-monitor /etc/dab-edi-web-monitor
+
+[Install]
+WantedBy=multi-user.target
