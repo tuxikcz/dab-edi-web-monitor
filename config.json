@@ -1,0 +1,47 @@
+{
+  "listen": {
+    "host": "0.0.0.0",
+    "port": 8088
+  },
+  "edi": {
+    "host": "93.185.96.156",
+    "port": 15000,
+    "connectTimeoutMs": 5000,
+    "dataTimeoutMs": 7000,
+    "reconnectMinMs": 1000,
+    "reconnectMaxMs": 15000
+  },
+  "binaries": {
+    "dablin": "/usr/bin/dablin",
+    "ffmpeg": "/usr/bin/ffmpeg"
+  },
+  "audio": {
+    "bitrate": "128k",
+    "sampleRate": 48000,
+    "channels": 2
+  },
+  "watchdog": {
+    "startupGraceMs": 12000,
+    "pcmTimeoutMs": 8000,
+    "mp3TimeoutMs": 12000,
+    "checkIntervalMs": 1000,
+    "restartDelayMs": 1500,
+    "killTimeoutMs": 1500,
+    "maxInputBufferBytes": 2097152,
+    "maxClientBufferBytes": 1048576
+  },
+  "auth": {
+    "enabled": false,
+    "username": "monitor",
+    "password": "change-me"
+  },
+  "stations": [
+    {
+      "id": "first",
+      "name": "Prvni sluzba multiplexu",
+      "selector": {
+        "type": "first"
+      }
+    }
+  ]
+}

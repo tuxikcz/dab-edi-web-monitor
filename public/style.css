@@ -1,0 +1,39 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0a0d12;
+  color: #edf3fb;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #172333 0, #0a0d12 48%); }
+main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 72px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 28px; }
+h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 3rem); }
+h2 { margin-top: 0; font-size: 1.05rem; }
+.eyebrow { color: #74c5ff; font-weight: 800; letter-spacing: .18em; font-size: .75rem; margin: 0 0 8px; }
+.badge { padding: 9px 13px; border-radius: 999px; font-weight: 750; white-space: nowrap; }
+.badge.ok { background: #123c2c; color: #79efb1; }
+.badge.bad { background: #481b24; color: #ff9eaa; }
+.player-card, article, .log-card { background: rgba(20, 27, 37, .93); border: 1px solid #2b394b; border-radius: 18px; box-shadow: 0 20px 65px rgba(0,0,0,.28); }
+.player-card { padding: 24px; display: grid; gap: 14px; }
+label { font-size: .85rem; color: #a7b7c9; font-weight: 700; }
+select, button { font: inherit; border-radius: 10px; border: 1px solid #3b4b60; }
+select { background: #0c121a; color: #fff; padding: 12px; }
+audio { width: 100%; }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+button { cursor: pointer; padding: 11px 16px; background: #2a9fe8; color: #061019; font-weight: 800; }
+button.secondary { background: #202c3a; color: #e8f1fb; }
+.message { min-height: 1.2em; margin: 0; color: #9eb1c5; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+article, .log-card { padding: 22px; }
+dl { display: grid; grid-template-columns: minmax(120px, .7fr) 1.3fr; gap: 10px 18px; margin: 0; }
+dt { color: #8ea2b8; }
+dd { margin: 0; overflow-wrap: anywhere; }
+.log-card { margin-top: 18px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; color: #c9d6e4; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (max-width: 680px) {
+  header { align-items: flex-start; flex-direction: column; }
+  .grid { grid-template-columns: 1fr; }
+  dl { grid-template-columns: 1fr; gap: 3px; }
+  dd { margin-bottom: 10px; }
+}

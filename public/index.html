@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DAB EDI monitor</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow">DAB MONITORING</p>
+        <h1>EDI webový přehrávač</h1>
+      </div>
+      <span id="ediBadge" class="badge bad">EDI offline</span>
+    </header>
+
+    <section class="player-card">
+      <label for="station">Stanice</label>
+      <select id="station"></select>
+      <audio id="audio" controls preload="none"></audio>
+      <div class="buttons">
+        <button id="play">Přehrát / znovu připojit</button>
+        <button id="restart" class="secondary">Restart dekodéru</button>
+      </div>
+      <p id="message" class="message"></p>
+    </section>
+
+    <section class="grid">
+      <article>
+        <h2>EDI vstup</h2>
+        <dl id="ediStatus"></dl>
+      </article>
+      <article>
+        <h2>Dekodér stanice</h2>
+        <dl id="stationStatus"></dl>
+      </article>
+    </section>
+
+    <section class="log-card">
+      <h2>Poslední diagnostika</h2>
+      <pre id="diagnostic">Čekám na stav…</pre>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
