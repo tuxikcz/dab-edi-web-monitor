@@ -108,6 +108,7 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && url.pathname === '/api/status') {
     json(res, 200, {
       time: Date.now(),
+      ui: config.ui,
       edi: source.status(),
       stations: [...workers.values()].map((worker) => worker.status())
     });

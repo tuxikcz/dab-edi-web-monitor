@@ -97,6 +97,16 @@ Delku teto uvodni diagnostiky lze nastavit:
 }
 ```
 
+Jazyk weboveho rozhrani lze nastavit v konfiguraci:
+
+```json
+"ui": {
+  "language": "cz"
+}
+```
+
+Podporovane hodnoty jsou `cz`, `en` a `de`.
+
 Pro stabilni produkcni pouziti nastavte konkretni SID:
 
 ```json

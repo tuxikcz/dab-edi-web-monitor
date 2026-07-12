@@ -111,5 +111,11 @@ export function loadConfig(configPath) {
   config.auth ??= { enabled: false };
   config.auth.enabled = Boolean(config.auth.enabled);
 
+  config.ui ??= {};
+  config.ui.language ??= 'cz';
+  if (!['cz', 'en', 'de'].includes(config.ui.language)) {
+    fail('ui.language musi byt "cz", "en" nebo "de"');
+  }
+
   return { config, resolvedPath: resolved };
 }

@@ -39,6 +39,9 @@
     "username": "monitor",
     "password": "change-me"
   },
+  "ui": {
+    "language": "cz"
+  },
   "stations": [
     {
       "id": "first",
