@@ -81,12 +81,6 @@ async function refreshStatus() {
         ['SID', station.currentService?.sid ?? '—'],
         ['SubChId', station.currentService?.subChannelId ?? '—'],
         ['Formát', serviceFormat(station.currentService)],
-        ['Poslední PCM', age(station.lastPcmAt)],
-        ['Poslední MP3', age(station.lastMp3At)],
-        ['Posluchači', station.clients],
-        ['Restarty', station.restarts],
-        ['DABlin PID', station.dablinPid ?? '—'],
-        ['FFmpeg PID', station.ffmpegPid ?? '—']
       ]);
       diagnostic.textContent = [
         station.lastRestartReason ? `Restart: ${station.lastRestartReason}` : null,

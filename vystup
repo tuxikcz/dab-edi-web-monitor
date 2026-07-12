@@ -1,0 +1,84 @@
+2026-07-12T00:45:34.653Z INFO  konfigurace: /home/tuxik/Desktop/github/dab-edi-web-monitor/config.json
+2026-07-12T00:45:34.655Z INFO  [first] start dablin -f eti -I -F -1 -w
+2026-07-12T00:45:34.673Z INFO  web posloucha na http://0.0.0.0:8088/
+2026-07-12T00:45:34.674Z ERROR [first/dablin] DABlin v1.16.0 - capital DAB experience
+2026-07-12T00:45:34.674Z ERROR [first/dablin] Plays a DAB/DAB+ audio service from an ETI-NI or an EDI AF stream.
+2026-07-12T00:45:34.674Z ERROR [first/dablin] https://github.com/Opendigitalradio/dablin
+2026-07-12T00:45:34.674Z ERROR [first/dablin] EnsembleSource: reading ETI from 'stdin'
+2026-07-12T00:45:34.674Z INFO  [EDI] spojeno 93.185.96.156:15000
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  1: start   0 CUs, size 144 CUs, PL EEP 1-A =  96 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  2: start 144 CUs, size  72 CUs, PL EEP 2-A =  72 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  3: start 216 CUs, size  54 CUs, PL EEP 3-A =  72 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  4: start 270 CUs, size  96 CUs, PL EEP 2-A =  96 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  5: start 366 CUs, size 108 CUs, PL EEP 1-A =  72 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  6: start 474 CUs, size  54 CUs, PL EEP 3-A =  72 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SubChId  7: start 528 CUs, size  72 CUs, PL EEP 2-A =  72 kBit/s
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SId 0x2FBC: audio service (SubChId  7, DAB+, primary)
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SId 0x24C7: audio service (SubChId  8, DAB+, primary)
+2026-07-12T00:45:34.696Z ERROR [first/dablin] FICDecoder: SId 0x2FDD: audio service (SubChId  9, DAB+, primary)
+2026-07-12T00:45:34.697Z ERROR [first/dablin] FICDecoder: SId 0x2FDE: audio service (SubChId 10, DAB+, primary)
+2026-07-12T00:45:34.697Z ERROR [first/dablin] FICDecoder: SubChId  8: start 600 CUs, size  54 CUs, PL EEP 3-A =  72 kBit/s
+2026-07-12T00:45:34.697Z ERROR [first/dablin] FICDecoder: SubChId  9: start 654 CUs, size  72 CUs, PL EEP 3-A =  96 kBit/s
+2026-07-12T00:45:34.697Z ERROR [first/dablin] FICDecoder: SubChId 10: start 726 CUs, size  72 CUs, PL EEP 2-A =  72 kBit/s
+2026-07-12T00:45:34.697Z ERROR [first/dablin] FICDecoder: SId 0x2FBC, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:34.697Z ERROR [first/dablin] FICDecoder: SId 0x24C7, SCIdS  0: MSC service component (SubChId  8)
+2026-07-12T00:45:34.720Z ERROR [first/dablin] FICDecoder: SId 0x2FD0: audio service (SubChId  1, DAB+, primary)
+2026-07-12T00:45:34.720Z ERROR [first/dablin] FICDecoder: SId 0x2497: audio service (SubChId  2, DAB+, primary)
+2026-07-12T00:45:34.720Z ERROR [first/dablin] FICDecoder: SId 0x24F8: audio service (SubChId  3, DAB+, primary)
+2026-07-12T00:45:34.720Z ERROR [first/dablin] FICDecoder: SId 0x2FDC: audio service (SubChId  4, DAB+, primary)
+2026-07-12T00:45:34.720Z ERROR [first/dablin] FICDecoder: SId 0x2F76: audio service (SubChId  5, DAB+, primary)
+2026-07-12T00:45:34.720Z ERROR [first/dablin] FICDecoder: SId 0x2FB0: audio service (SubChId  6, DAB+, primary)
+2026-07-12T00:45:34.744Z ERROR [first/dablin] FICDecoder: SId 0x24C7, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:34.768Z ERROR [first/dablin] FICDecoder: EId 0x2109: alarm flag: false
+2026-07-12T00:45:34.792Z ERROR [first/dablin] FICDecoder: SId 0x2FDD, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:34.792Z ERROR [first/dablin] FICDecoder: SId 0x2FDD, SCIdS  0: MSC service component (SubChId  9)
+2026-07-12T00:45:34.840Z ERROR [first/dablin] FICDecoder: SId 0x2FDE, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:34.888Z ERROR [first/dablin] FICDecoder: SId 0x2FDE, SCIdS  0: MSC service component (SubChId 10)
+2026-07-12T00:45:34.888Z ERROR [first/dablin] FICDecoder: SubChId  1: language 'Czech'
+2026-07-12T00:45:34.888Z ERROR [first/dablin] FICDecoder: SId 0x2FD0: programme type (dynamic): 'Other Music'
+2026-07-12T00:45:34.888Z ERROR [first/dablin] FICDecoder: SId 0x2497: programme type (dynamic): 'Rock Music'
+2026-07-12T00:45:34.936Z ERROR [first/dablin] FICDecoder: SId 0x24F8: programme type (dynamic): 'Rock Music'
+2026-07-12T00:45:34.936Z ERROR [first/dablin] FICDecoder: SId 0x2FDC: programme type (dynamic): 'Jazz Music'
+2026-07-12T00:45:34.936Z ERROR [first/dablin] FICDecoder: SId 0x2F76: programme type (dynamic): 'Pop Music'
+2026-07-12T00:45:34.984Z ERROR [first/dablin] FICDecoder: SId 0x2FB0: programme type (dynamic): 'Pop Music'
+2026-07-12T00:45:34.984Z ERROR [first/dablin] FICDecoder: SId 0x2FBC: programme type (dynamic): 'Pop Music'
+2026-07-12T00:45:34.984Z ERROR [first/dablin] FICDecoder: SId 0x24C7: programme type (dynamic): 'Pop Music'
+2026-07-12T00:45:34.984Z ERROR [first/dablin] FICDecoder: SId 0x2FDD: programme type (dynamic): 'Pop Music'
+2026-07-12T00:45:35.032Z ERROR [first/dablin] FICDecoder: SId 0x2FDE: programme type (dynamic): 'Education'
+2026-07-12T00:45:35.032Z ERROR [first/dablin] FICDecoder: UTC date/time: 2026-07-12, Sun - 00:45:35.024
+2026-07-12T00:45:35.056Z ERROR [first/dablin] FICDecoder: SId 0x2FD0: programme service label 'ENERGIC' ('ENERGIC')
+2026-07-12T00:45:35.056Z ERROR [first/dablin] EnsemblePlayer: playing sub-channel 1 (DAB+)
+2026-07-12T00:45:35.056Z ERROR [first/dablin] FICDecoder: SId 0x2497: programme service label 'CAS ROCK' ('CAS ROCK')
+2026-07-12T00:45:35.080Z ERROR [first/dablin] FICDecoder: SId 0x24F8: programme service label 'HEY RADIO' ('HEYRADIO')
+2026-07-12T00:45:35.080Z ERROR [first/dablin] FICDecoder: SId 0x2FDC: programme service label 'Slow Down Radio' ('SlowDown')
+2026-07-12T00:45:35.104Z ERROR [first/dablin] FICDecoder: SId 0x2F76: programme service label 'ZUN radio' ('ZUN')
+2026-07-12T00:45:35.104Z ERROR [first/dablin] FICDecoder: SId 0x2FB0: programme service label 'SeeJay Radio' ('SeeJay')
+2026-07-12T00:45:35.104Z ERROR [first/dablin] FICDecoder: SId 0x2FBC: programme service label 'WorldRadio' ('WorldRad')
+2026-07-12T00:45:35.128Z ERROR [first/dablin] FICDecoder: SId 0x24C7: programme service label '!!!FRESH radio' ('!!!FRESH')
+2026-07-12T00:45:35.128Z ERROR [first/dablin] FICDecoder: SId 0x2FDD: programme service label 'Šlágr Rádio' ('Šlágr')
+2026-07-12T00:45:35.128Z ERROR [first/dablin] FICDecoder: SId 0x2FDE: programme service label 'EDU Radio' ('EDURadio')
+2026-07-12T00:45:35.152Z ERROR [first/dablin] FICDecoder: SId 0x2FD0: ASu flags 0x0002, cluster(s) 0x01
+2026-07-12T00:45:35.152Z ERROR [first/dablin] FICDecoder: SId 0x24F8: ASu flags 0x0002, cluster(s) 0x01
+2026-07-12T00:45:35.152Z ERROR [first/dablin] FICDecoder: ECC: 0xE2, LTO: +02:00, international table ID: 0x01 (RDS PTY)
+2026-07-12T00:45:35.152Z ERROR [first/dablin] (0+) SuperframeFilter: Superframe sync started...
+2026-07-12T00:45:35.224Z ERROR [first/dablin] (5+) (0+) FICDecoder: EId 0x2109: ensemble label 'FIERA' ('FIERA')
+2026-07-12T00:45:35.248Z ERROR [first/dablin] (0+) SuperframeFilter: Superframe sync succeeded after 4 frame(s)
+2026-07-12T00:45:35.248Z ERROR [first/dablin] EnsemblePlayer: format: HE-AAC, 48 kHz Stereo @ 96 kBit/s
+2026-07-12T00:45:35.248Z ERROR [first/dablin] AACDecoder: using decoder 'FAAD2'
+2026-07-12T00:45:35.248Z ERROR [first/dablin] WAVOutput: format set; samplerate: 48000, channels: 2
+2026-07-12T00:45:35.250Z ERROR [first/ffmpeg] [wav @ 0x55e7ed835f40] Ignoring maximum wav data size, file may be invalid
+2026-07-12T00:45:35.272Z ERROR [first/dablin] FICDecoder: SId 0x2FD0, SCIdS  0: MSC service component (SubChId  1)
+2026-07-12T00:45:35.296Z ERROR [first/dablin] FICDecoder: SId 0x2FD0, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:35.320Z ERROR [first/dablin] FICDecoder: SId 0x24F8, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:35.368Z ERROR [first/dablin] FICDecoder: SId 0x24F8, SCIdS  0: MSC service component (SubChId  3)
+2026-07-12T00:45:35.392Z ERROR [first/dablin] FICDecoder: SId 0x2497, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:35.416Z ERROR [first/dablin] FICDecoder: SId 0x2FDC, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:35.464Z ERROR [first/dablin] FICDecoder: SId 0x2497, SCIdS  0: MSC service component (SubChId  2)
+2026-07-12T00:45:35.488Z ERROR [first/dablin] FICDecoder: SId 0x2F76, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:35.512Z ERROR [first/dablin] FICDecoder: SId 0x2FB0, SCIdS  0: Slideshow (2 bytes UA data)
+2026-07-12T00:45:35.560Z ERROR [first/dablin] FICDecoder: SId 0x2FDC, SCIdS  0: MSC service component (SubChId  4)
+2026-07-12T00:45:35.608Z ERROR [first/dablin] FICDecoder: SId 0x2F76, SCIdS  0: MSC service component (SubChId  5)
+2026-07-12T00:45:35.608Z ERROR [first/dablin] FICDecoder: SId 0x2FB0, SCIdS  0: MSC service component (SubChId  6)
+2026-07-12T00:45:35.611Z ERROR [first/ffmpeg] [aist#0:0/pcm_s16le @ 0x55e7ed8371c0] Guessed Channel Layout: stereo
+2026-07-12T00:45:35.632Z ERROR [first/dablin] FICDecoder: SId 0x2FBC, SCIdS  0: MSC service component (SubChId  7)
+
