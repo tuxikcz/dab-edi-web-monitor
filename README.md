@@ -1,24 +1,24 @@
 # DAB EDI web monitor
 
-Jednoduchy interní webovy prehravac DAB/DAB+ sluzeb z EDI streamu. Node.js drzi jedno TCP spojeni k multiplexu, kopiruje EDI do samostatne rizene instance DABlinu pro kazdou nakonfigurovanou stanici a FFmpeg prevadi WAV/PCM na MP3 pro prohlizec.
+A simple internal web player for DAB/DAB+ services from an EDI stream. Node.js keeps one TCP connection to the multiplex, copies EDI data into a separately supervised DABlin instance for each configured station, and FFmpeg converts WAV/PCM to MP3 for the browser.
 
-Projekt nepouziva shellovou pipeline. Pri padu, zatuhnuti nebo ucpani DABlinu ci FFmpegu Node ukonci obe procesni skupiny a spusti cely dekodovaci retezec znovu. Systemd ma navic `KillMode=control-group`, takze po restartu sluzby nezustanou sirotci.
+The project does not use a shell pipeline. If DABlin or FFmpeg crashes, stalls, or gets blocked, Node terminates both process groups and starts the whole decoding chain again. The systemd unit also uses `KillMode=control-group`, so no orphaned processes remain after a service restart.
 
-## Pozadavky
+## Requirements
 
-- Linux, doporucen Debian 12/13
-- Node.js 20 nebo novejsi
+- Linux, Debian 12/13 recommended
+- Node.js 20 or newer
 - DABlin
-- FFmpeg s `libmp3lame`
+- FFmpeg with `libmp3lame`
 
-Na Debianu:
+On Debian:
 
 ```bash
 apt update
 apt install nodejs dablin ffmpeg
 ```
 
-## Rychly test bez instalace
+## Quick Test Without Installation
 
 ```bash
 cd dab-edi-web-monitor
@@ -27,69 +27,66 @@ npm run test-edi
 npm start
 ```
 
-Web pak posloucha na:
+The web UI then listens on:
 
 ```text
-http://IP_SERVERU:8088/
+http://SERVER_IP:8088/
 ```
 
-Pouze MP3 stream bez weboveho rozhrani spustite:
+To start only the MP3 stream without the web UI:
 
 ```bash
 npm run stream
 ```
 
-Pro jednu nakonfigurovanou stanici je stream dostupny na:
+For one configured station, the stream is available at:
 
 ```text
-http://IP_SERVERU:8088/stream.mp3
+http://SERVER_IP:8088/stream.mp3
 ```
 
-Pro vice stanic pouzijte ID z `config.json`:
+For multiple stations, use the ID from `config.json`:
 
 ```text
-http://IP_SERVERU:8088/stream/first.mp3
-http://IP_SERVERU:8088/first.mp3
+http://SERVER_IP:8088/stream/first.mp3
+http://SERVER_IP:8088/first.mp3
 ```
 
-V externim HTML5 prehravaci pak staci:
+In an external HTML5 player, use:
 
 ```html
-<audio controls src="http://IP_SERVERU:8088/stream.mp3"></audio>
+<audio controls src="http://SERVER_IP:8088/stream.mp3"></audio>
 ```
 
-Vychozi endpoint je nastaven na:
+The default endpoint is set to:
 
 ```text
 93.185.96.156:15000
 ```
 
-Tento endpoint posila ETI-NI data, proto ma v `config.json` nastaveno:
+This endpoint sends ETI-NI data, so `config.json` uses:
 
 ```json
 "format": "eti"
 ```
 
-Pro skutecny EDI AF vstup pouzijte `"format": "edi"`.
+For a real EDI AF input, use `"format": "edi"`.
 
-## Nastaveni stanic
+## Station Configuration
 
-Soubor `config.json` obsahuje pro prvni test vyber prvni nalezene sluzby:
+The `config.json` file contains a first-test setup that selects the first discovered service:
 
 ```json
 {
   "id": "first",
-  "name": "Prvni sluzba multiplexu",
+  "name": "First multiplex service",
   "selector": { "type": "serviceIndex", "value": 1 }
 }
 ```
 
-`serviceIndex` vybira audio sluzbu podle poradi SubChId, ktere DABlin vypisuje
-u radku `audio service (SubChId ...)`. Hodnota `1` znamena nejmensi SubChId,
-`2` dalsi atd. Pri startu aplikace se kratce spusti diagnostika DABlinu, index
-se prevede na SID a vlastni stream se potom spusti stabilne pres SID.
+`serviceIndex` selects an audio service by the SubChId order printed by DABlin on lines containing `audio service (SubChId ...)`. Value `1` means the lowest SubChId, `2` means the next one, and so on. On application startup, a short DABlin discovery run is executed, the index is converted to a SID, and the actual stream then starts using that SID.
 
-Delku teto uvodni diagnostiky lze nastavit:
+The length of this initial discovery can be configured:
 
 ```json
 "stream": {
@@ -97,7 +94,7 @@ Delku teto uvodni diagnostiky lze nastavit:
 }
 ```
 
-Jazyk weboveho rozhrani lze nastavit v konfiguraci:
+The web UI language can be configured:
 
 ```json
 "ui": {
@@ -105,11 +102,9 @@ Jazyk weboveho rozhrani lze nastavit v konfiguraci:
 }
 ```
 
-Podporovane hodnoty jsou `cz`, `en` a `de`.
+Supported values are `cz`, `en`, and `de`.
 
-DL texty, DL+ metadata a MOT slideshow obrazky vyzaduji DABlin s patchem
-`patches/dablin-pad-metadata.patch`. Po instalaci patchnuteho DABlinu je lze
-zapnout v konfiguraci:
+DL text, DL+ metadata, and MOT slideshow images require DABlin with the `patches/dablin-pad-metadata.patch` patch. After installing the patched DABlin, enable metadata in the configuration:
 
 ```json
 "metadata": {
@@ -118,46 +113,39 @@ zapnout v konfiguraci:
 }
 ```
 
-Web potom zobrazi posledni textova metadata a aktualni slideshow obrazek
-u vybrane stanice. Bez patchnuteho DABlinu ponechte `enabled` na `false`.
+The web UI will then show the latest text metadata and the current slideshow image for the selected station. Without a patched DABlin, keep `enabled` set to `false`.
 
-### Patch DABlinu pro PAD metadata
+### DABlin Patch For PAD Metadata
 
-Bezny konzolovy DABlin posila na stdout jen audio data. Patch
-`patches/dablin-pad-metadata.patch` doplni volby:
+The normal console version of DABlin writes only audio data to stdout. The `patches/dablin-pad-metadata.patch` patch adds these options:
 
-- `-j` zapisuje DL/DL+/slideshow udalosti jako JSON lines na stderr;
-- `-J <adresar>` dela to same a navic uklada posledni MOT slideshow obrazek.
+- `-j` writes DL/DL+/slideshow events as JSON lines to stderr;
+- `-J <dir>` does the same and also writes the latest MOT slideshow image to a directory.
 
-Priklad sestaveni na Debianu:
+Example build on Debian:
 
 ```bash
 apt update
 apt install git build-essential cmake pkg-config libfaad-dev libmpg123-dev
 git clone https://github.com/Opendigitalradio/dablin.git /tmp/dablin-src
 cd /tmp/dablin-src
-git apply /cesta/k/dab-edi-web-monitor/patches/dablin-pad-metadata.patch
+git apply /path/to/dab-edi-web-monitor/patches/dablin-pad-metadata.patch
 cmake -S . -B build -DDISABLE_SDL=1
 cmake --build build --target dablin -j"$(nproc)"
 sudo install -m 0755 build/src/dablin /usr/local/bin/dablin
 ```
 
-Po instalaci overte, ze DABlin zna nove volby:
+After installation, verify that DABlin knows the new options:
 
 ```bash
 /usr/local/bin/dablin -h | grep -- "-J"
 ```
 
-Pak lze v konfiguraci zapnout `metadata.enabled`. Pokud aplikace po zapnuti
-skonci hlaskou typu `unrecognized option`, stale se pouziva nepatchnuty DABlin
-nebo konfigurace `binaries.dablin` ukazuje na jinou binarku.
+Then enable `metadata.enabled` in the configuration. If the application exits with an `unrecognized option` message after enabling it, it is still using an unpatched DABlin, or `binaries.dablin` points to a different binary.
 
-Pokud DABlin skonci hlaskou `SDL output was disabled, so PCM output must be
-selected!` i pri argumentu `-w`, byl pravdepodobne sestaven ze starsi verze
-tohoto patche. Aktualizujte patch, znovu spustte `cmake --build ...` a binarku
-znovu nainstalujte.
+If DABlin exits with `SDL output was disabled, so PCM output must be selected!` even with the `-w` argument, it was probably built from an older version of this patch. Update the patch, run `cmake --build ...` again, and reinstall the binary.
 
-Pro stabilni produkcni pouziti nastavte konkretni SID:
+For stable production use, configure a specific SID:
 
 ```json
 {
@@ -167,7 +155,7 @@ Pro stabilni produkcni pouziti nastavte konkretni SID:
 }
 ```
 
-Nebo presny label:
+Or an exact label:
 
 ```json
 {
@@ -177,43 +165,43 @@ Nebo presny label:
 }
 ```
 
-Do pole `stations` lze pridat libovolny pocet sluzeb. Pro kazdou bezi vlastni DABlin a FFmpeg, ale vsechny dostavaji data z jednoho sdileneho EDI TCP spojeni.
+Any number of services can be added to the `stations` array. Each one runs its own DABlin and FFmpeg process, but all of them receive data from one shared EDI TCP connection.
 
-## Diagnostika endpointu
+## Endpoint Diagnostics
 
-Pouhy TCP test a objem dat:
+Basic TCP test and received data volume:
 
 ```bash
 npm run test-edi
 ```
 
-Delka testu v sekundach:
+Test duration in seconds:
 
 ```bash
 TEST_SECONDS=30 npm run test-edi
 ```
 
-Textova diagnostika DABlinu bez prehravani:
+Text-only DABlin diagnostics without playback:
 
 ```bash
 DISCOVER_SECONDS=30 npm run discover
 ```
 
-Automaticke parsovani seznamu sluzeb neni v teto prvni verzi implementovano, protoze format konzoloveho vystupu se mezi verzemi DABlinu lisi. Webovy vyber zobrazuje sluzby zadane v `config.json`.
+Automatic parsing of the service list is not implemented in this first version because the console output format differs between DABlin versions. The web selection shows services defined in `config.json`.
 
-## Systemova instalace
+## System Installation
 
 ```bash
 sudo ./install.sh
 ```
 
-Konfigurace se instaluje do:
+The configuration is installed to:
 
 ```text
 /etc/dab-edi-web-monitor/config.json
 ```
 
-Prikazy:
+Commands:
 
 ```bash
 systemctl status dab-edi-web-monitor
@@ -221,7 +209,7 @@ journalctl -u dab-edi-web-monitor -f
 systemctl restart dab-edi-web-monitor
 ```
 
-Po zmene konfigurace:
+After changing the configuration:
 
 ```bash
 systemctl restart dab-edi-web-monitor
@@ -229,27 +217,27 @@ systemctl restart dab-edi-web-monitor
 
 ## Watchdog
 
-Kontroluji se tri nezavisle body:
+Three independent points are monitored:
 
-1. zda z TCP socketu prichazeji EDI data;
-2. zda DABlin vydava WAV/PCM;
-3. zda FFmpeg vydava MP3.
+1. whether EDI data is coming from the TCP socket;
+2. whether DABlin is producing WAV/PCM;
+3. whether FFmpeg is producing MP3.
 
-Pri prekroceni timeoutu se shodi obe procesni skupiny pomoci `SIGTERM`, po kratkem timeoutu `SIGKILL`, a dekoder se znovu spusti. Pomaly webovy klient je odpojen, aby nemohl zaplnit pamet ani zastavit dekodovani.
+When a timeout is exceeded, both process groups are terminated with `SIGTERM`, then with `SIGKILL` after a short timeout, and the decoder is started again. A slow web client is disconnected so it cannot fill memory or stop decoding.
 
-## Volitelne heslo
+## Optional Password
 
-V `config.json`:
+In `config.json`:
 
 ```json
 "auth": {
   "enabled": true,
   "username": "monitor",
-  "password": "zmente-me"
+  "password": "change-me"
 }
 ```
 
-Pri vystaveni do internetu je vhodne dat aplikaci za HTTPS reverse proxy. Pro nginx vypnete buffering streamu:
+When exposing the application to the internet, it should be placed behind an HTTPS reverse proxy. For nginx, disable stream buffering:
 
 ```nginx
 location / {
@@ -263,8 +251,8 @@ location / {
 
 ## API
 
-- `GET /api/status` – stav EDI a dekoderu
-- `GET /api/stations` – seznam nakonfigurovanych stanic
-- `GET /stream/ID.mp3` – MP3 stream
-- `POST /api/restart/ID` – rucni restart dekoderu
-- `GET /healthz` – HTTP 200, pokud je EDI online a alespon jedna stanice streamuje
+- `GET /api/status` - EDI and decoder status
+- `GET /api/stations` - list of configured stations
+- `GET /stream/ID.mp3` - MP3 stream
+- `POST /api/restart/ID` - manual decoder restart
+- `GET /healthz` - HTTP 200 if EDI is online and at least one station is streaming
