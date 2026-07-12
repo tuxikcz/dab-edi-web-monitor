@@ -45,6 +45,7 @@ const dictionaries = {
     reconnects: 'Reconnecty',
     lastError: 'Poslední chyba',
     state: 'Stav',
+    ensemble: 'Multiplex',
     playing: 'Hraje',
     format: 'Formát',
     nowPlaying: 'Právě hraje',
@@ -90,6 +91,7 @@ const dictionaries = {
     reconnects: 'Reconnects',
     lastError: 'Last error',
     state: 'State',
+    ensemble: 'Ensemble',
     playing: 'Playing',
     format: 'Format',
     nowPlaying: 'Now playing',
@@ -135,6 +137,7 @@ const dictionaries = {
     reconnects: 'Reconnects',
     lastError: 'Letzter Fehler',
     state: 'Status',
+    ensemble: 'Ensemble',
     playing: 'Spielt',
     format: 'Format',
     nowPlaying: 'Aktuell',
@@ -204,6 +207,10 @@ function selectedStatus() {
 
 function serviceName(service, fallback) {
   return service?.label || service?.shortLabel || service?.sid || fallback || '—';
+}
+
+function ensembleName(ensemble) {
+  return ensemble?.label || ensemble?.shortLabel || ensemble?.id || '—';
 }
 
 function serviceFormat(service) {
@@ -280,6 +287,8 @@ async function refreshStatus() {
     if (station) {
       stationStatus.innerHTML = rows([
         [t('state'), station.state],
+        [t('ensemble'), ensembleName(station.currentEnsemble)],
+        ['EId', station.currentEnsemble?.id ?? '—'],
         [t('playing'), serviceName(station.currentService, station.name)],
         ['SID', station.currentService?.sid ?? '—'],
         ['SubChId', station.currentService?.subChannelId ?? '—'],

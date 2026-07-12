@@ -58,6 +58,11 @@ export class StationWorker {
       channels: null,
       bitrate: null
     };
+    this.currentEnsemble = {
+      id: null,
+      label: null,
+      shortLabel: null
+    };
     this.currentMetadata = {
       dynamicLabel: null,
       dlPlus: [],
@@ -304,6 +309,19 @@ export class StationWorker {
   }
 
   #captureDablinMetadata(line) {
+    const ensembleLabelMatch = line.match(/FICDecoder: EId (0x[0-9A-Fa-f]+): ensemble label '([^']*)' \('([^']*)'\)/);
+    if (ensembleLabelMatch) {
+      this.currentEnsemble.id = ensembleLabelMatch[1];
+      this.currentEnsemble.label = ensembleLabelMatch[2];
+      this.currentEnsemble.shortLabel = ensembleLabelMatch[3];
+      return;
+    }
+
+    const ensembleIdMatch = line.match(/FICDecoder: EId (0x[0-9A-Fa-f]+):/);
+    if (ensembleIdMatch) {
+      this.currentEnsemble.id = ensembleIdMatch[1];
+    }
+
     const playingMatch = line.match(/EnsemblePlayer: playing sub-channel\s+(\d+)/);
     if (playingMatch) {
       this.currentService.subChannelId = Number(playingMatch[1]);
@@ -445,6 +463,7 @@ export class StationWorker {
       bytesPcm: this.bytesPcm,
       bytesMp3: this.bytesMp3,
       currentService: this.currentService,
+      currentEnsemble: this.currentEnsemble,
       metadata: {
         ...this.currentMetadata,
         slide: this.currentMetadata.slide ? {
