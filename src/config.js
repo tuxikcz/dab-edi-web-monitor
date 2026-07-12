@@ -65,6 +65,19 @@ export function loadConfig(configPath) {
     }
   }
 
+  config.stream ??= {};
+  config.stream.stationIndex ??= null;
+  if (
+    config.stream.stationIndex !== null &&
+    (
+      !Number.isInteger(config.stream.stationIndex) ||
+      config.stream.stationIndex < 0 ||
+      config.stream.stationIndex >= config.stations.length
+    )
+  ) {
+    fail(`stream.stationIndex musi byt null nebo index 0 az ${config.stations.length - 1}`);
+  }
+
   config.edi.connectTimeoutMs ??= 5000;
   config.edi.dataTimeoutMs ??= 7000;
   config.edi.reconnectMinMs ??= 1000;

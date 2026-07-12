@@ -86,8 +86,8 @@ function streamHeaders(worker) {
 }
 
 function stationFromPath(pathname) {
-  if (pathname === '/stream.mp3' && config.stations.length === 1) {
-    return config.stations[0].id;
+  if (pathname === '/stream.mp3' && defaultStationId) {
+    return defaultStationId;
   }
 
   const streamMatch = pathname.match(/^\/stream\/([a-zA-Z0-9_-]+)\.mp3$/);
@@ -100,9 +100,15 @@ function stationFromPath(pathname) {
 }
 
 log.info(`konfigurace: ${resolvedPath}`);
+const streamStations = config.stream.stationIndex === null
+  ? config.stations
+  : [config.stations[config.stream.stationIndex]];
+const defaultStationId = config.stream.stationIndex === null
+  ? (config.stations.length === 1 ? config.stations[0].id : null)
+  : config.stations[config.stream.stationIndex].id;
 const source = new EdiSource(config.edi, log);
 const workers = new Map();
-for (const station of config.stations) {
+for (const station of streamStations) {
   const worker = new StationWorker(station, source, config, log);
   workers.set(station.id, worker);
   worker.start();
@@ -131,6 +137,8 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && url.pathname === '/status') {
     json(res, 200, {
       time: Date.now(),
+      defaultStream: defaultStationId ? '/stream.mp3' : null,
+      stationIndex: config.stream.stationIndex,
       streams: Object.fromEntries(
         [...workers.values()].map((worker) => [
           worker.station.id,
@@ -169,9 +177,9 @@ const server = http.createServer((req, res) => {
     const lines = [
       'DAB MP3 stream server',
       '',
-      ...config.stations.map((station) => `${station.name}: /stream/${station.id}.mp3`),
+      ...streamStations.map((station) => `${station.name}: /stream/${station.id}.mp3`),
       '',
-      config.stations.length === 1 ? `Single-station shortcut: /stream.mp3` : null,
+      defaultStationId ? `Default stream: /stream.mp3` : null,
       'Status: /status',
       'Health: /healthz'
     ].filter((line) => line !== null);
@@ -188,7 +196,8 @@ server.on('clientError', (error, socket) => {
 });
 
 server.listen(config.listen.port, config.listen.host, () => {
-  log.info(`MP3 stream posloucha na http://${config.listen.host}:${config.listen.port}/stream.mp3`);
+  const streamPath = defaultStationId ? '/stream.mp3' : '/stream/ID.mp3';
+  log.info(`MP3 stream posloucha na http://${config.listen.host}:${config.listen.port}${streamPath}`);
 });
 
 let stopping = false;

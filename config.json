@@ -4,8 +4,8 @@
     "port": 8088
   },
   "edi": {
-    "host": "93.185.96.156",
-    "port": 15000,
+    "host": "10.37.68.4",
+    "port": 14000,
     "format": "eti",
     "connectTimeoutMs": 5000,
     "dataTimeoutMs": 7000,
@@ -20,6 +20,9 @@
     "bitrate": "128k",
     "sampleRate": 48000,
     "channels": 2
+  },
+  "stream": {
+    "stationIndex": 0
   },
   "watchdog": {
     "startupGraceMs": 12000,

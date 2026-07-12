@@ -58,6 +58,20 @@ V externim HTML5 prehravaci pak staci:
 <audio controls src="http://IP_SERVERU:8088/stream.mp3"></audio>
 ```
 
+Kterou stanici ze `stations[]` ma stream-only server pouzit pro `/stream.mp3`,
+urcuje nulovy index v konfiguraci:
+
+```json
+"stream": {
+  "stationIndex": 0
+}
+```
+
+Hodnota `0` znamena prvni stanici v poli `stations`, `1` druhou atd.
+Pokud `stationIndex` nechate `null`, stream-only server spusti vsechny stanice
+a `/stream.mp3` bude dostupne jen v pripade, ze je nakonfigurovana prave jedna
+stanice.
+
 Vychozi endpoint je nastaven na:
 
 ```text
