@@ -82,6 +82,16 @@ function staticFile(res, relativePath) {
   res.end(data);
 }
 
+function slideContentType(filename) {
+  switch (path.extname(filename).toLowerCase()) {
+    case '.jpg':
+    case '.jpeg': return 'image/jpeg';
+    case '.png': return 'image/png';
+    case '.gif': return 'image/gif';
+    default: return 'application/octet-stream';
+  }
+}
+
 log.info(`konfigurace: ${resolvedPath}`);
 const stations = await resolveServiceIndexSelectors(config, config.stations, log);
 const source = new EdiSource(config.edi, log);
@@ -126,6 +136,27 @@ const server = http.createServer((req, res) => {
     if (!worker) { json(res, 404, { error: 'Stanice nenalezena' }); return; }
     worker.restart('rucni restart z webu');
     json(res, 202, { ok: true });
+    return;
+  }
+
+  const slideMatch = url.pathname.match(/^\/api\/slide\/([a-zA-Z0-9_-]+)$/);
+  if (req.method === 'GET' && slideMatch) {
+    const worker = workers.get(slideMatch[1]);
+    const filename = worker?.metadataSlideFile();
+    if (!worker || !filename) { res.writeHead(404); res.end('No slide'); return; }
+
+    let stat;
+    try { stat = fs.statSync(filename); } catch {
+      res.writeHead(404); res.end('No slide'); return;
+    }
+    if (!stat.isFile()) { res.writeHead(404); res.end('No slide'); return; }
+
+    res.writeHead(200, {
+      'Content-Type': slideContentType(filename),
+      'Content-Length': stat.size,
+      'Cache-Control': 'no-store'
+    });
+    fs.createReadStream(filename).pipe(res);
     return;
   }
 

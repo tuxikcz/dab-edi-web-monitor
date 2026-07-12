@@ -117,5 +117,13 @@ export function loadConfig(configPath) {
     fail('ui.language musi byt "cz", "en" nebo "de"');
   }
 
+  config.metadata ??= {};
+  config.metadata.enabled = Boolean(config.metadata.enabled);
+  config.metadata.slideDir ??= '/tmp/dab-edi-web-monitor-metadata';
+  if (typeof config.metadata.slideDir !== 'string' || config.metadata.slideDir.trim() === '') {
+    fail('metadata.slideDir musi byt neprazdna cesta');
+  }
+  config.metadata.slideDir = path.resolve(config.metadata.slideDir);
+
   return { config, resolvedPath: resolved };
 }

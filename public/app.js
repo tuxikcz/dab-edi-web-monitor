@@ -7,6 +7,10 @@ const ediStatus = document.querySelector('#ediStatus');
 const stationStatus = document.querySelector('#stationStatus');
 const diagnostic = document.querySelector('#diagnostic');
 const message = document.querySelector('#message');
+const metadataPanel = document.querySelector('#metadataPanel');
+const dynamicLabel = document.querySelector('#dynamicLabel');
+const dlPlus = document.querySelector('#dlPlus');
+const slideImage = document.querySelector('#slideImage');
 
 let stations = [];
 let status = null;
@@ -43,6 +47,14 @@ const dictionaries = {
     state: 'Stav',
     playing: 'Hraje',
     format: 'Formát',
+    nowPlaying: 'Právě hraje',
+    noMetadata: 'Bez textových metadat.',
+    artist: 'Interpret',
+    songTitle: 'Skladba',
+    homepage: 'Web',
+    stationName: 'Stanice',
+    programme: 'Program',
+    slideAlt: 'Doprovodný obrázek stanice',
     noDiagnostics: 'Bez diagnostických hlášení.',
     restartReason: 'Restart',
     playbackStarted: 'Přehrávání spuštěno.',
@@ -80,6 +92,14 @@ const dictionaries = {
     state: 'State',
     playing: 'Playing',
     format: 'Format',
+    nowPlaying: 'Now playing',
+    noMetadata: 'No text metadata.',
+    artist: 'Artist',
+    songTitle: 'Title',
+    homepage: 'Homepage',
+    stationName: 'Station',
+    programme: 'Programme',
+    slideAlt: 'Station slideshow image',
     noDiagnostics: 'No diagnostic messages.',
     restartReason: 'Restart',
     playbackStarted: 'Playback started.',
@@ -117,6 +137,14 @@ const dictionaries = {
     state: 'Status',
     playing: 'Spielt',
     format: 'Format',
+    nowPlaying: 'Aktuell',
+    noMetadata: 'Keine Textmetadaten.',
+    artist: 'Interpret',
+    songTitle: 'Titel',
+    homepage: 'Web',
+    stationName: 'Station',
+    programme: 'Programm',
+    slideAlt: 'Begleitbild der Station',
     noDiagnostics: 'Keine Diagnosemeldungen.',
     restartReason: 'Restart',
     playbackStarted: 'Wiedergabe gestartet.',
@@ -159,6 +187,17 @@ function rows(items) {
   return items.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('');
 }
 
+function textRows(items) {
+  dlPlus.replaceChildren();
+  for (const [key, value] of items) {
+    const dt = document.createElement('dt');
+    const dd = document.createElement('dd');
+    dt.textContent = key;
+    dd.textContent = value;
+    dlPlus.append(dt, dd);
+  }
+}
+
 function selectedStatus() {
   return status?.stations?.find((item) => item.id === stationSelect.value);
 }
@@ -175,6 +214,40 @@ function serviceFormat(service) {
     service?.bitrate
   ].filter(Boolean);
   return parts.join(', ') || '—';
+}
+
+function dlPlusLabel(item) {
+  const type = item?.content_type_name ?? '';
+  if (type === 'ITEM.ARTIST') return t('artist');
+  if (type === 'ITEM.TITLE') return t('songTitle');
+  if (type === 'PROGRAMME.HOMEPAGE') return t('homepage');
+  if (type === 'STATIONNAME.SHORT' || type === 'STATIONNAME.LONG') return t('stationName');
+  if (type.startsWith('PROGRAMME.')) return t('programme');
+  return type || 'DL+';
+}
+
+function renderMetadata(station) {
+  const metadata = station?.metadata ?? {};
+  dynamicLabel.textContent = metadata.dynamicLabel || t('noMetadata');
+
+  const items = (metadata.dlPlus ?? [])
+    .map((item) => [dlPlusLabel(item), String(item?.text ?? '').trim()])
+    .filter(([, value]) => value);
+  textRows(items);
+
+  if (metadata.slide?.url) {
+    if (slideImage.getAttribute('src') !== metadata.slide.url) {
+      slideImage.src = metadata.slide.url;
+    }
+    slideImage.alt = t('slideAlt');
+    slideImage.hidden = false;
+    metadataPanel.classList.remove('no-slide');
+  } else {
+    slideImage.removeAttribute('src');
+    slideImage.alt = '';
+    slideImage.hidden = true;
+    metadataPanel.classList.add('no-slide');
+  }
 }
 
 async function loadStations() {
@@ -217,6 +290,9 @@ async function refreshStatus() {
         station.lastDablinMessage ? `DABlin: ${station.lastDablinMessage}` : null,
         station.lastFfmpegMessage ? `FFmpeg: ${station.lastFfmpegMessage}` : null
       ].filter(Boolean).join('\n') || t('noDiagnostics');
+      renderMetadata(station);
+    } else {
+      renderMetadata(null);
     }
   } catch (error) {
     ediBadge.textContent = t('apiOffline');

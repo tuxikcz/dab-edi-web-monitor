@@ -117,6 +117,51 @@ audio {
   width: 100%;
 }
 
+.metadata-panel {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid #2b3038;
+  border-radius: 4px;
+  background: #13171d;
+}
+
+.metadata-panel.no-slide {
+  grid-template-columns: 1fr;
+}
+
+.slide-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  border: 1px solid #313841;
+  border-radius: 4px;
+  background: #0f1216;
+}
+
+.slide-image[hidden] {
+  display: none;
+}
+
+.metadata-copy {
+  min-width: 0;
+}
+
+.dynamic-label {
+  margin: 0 0 12px;
+  color: #e4e9f0;
+  font-size: .98rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.dl-plus {
+  grid-template-columns: minmax(92px, .4fr) 1fr;
+  font-size: .86rem;
+}
+
 .buttons {
   display: flex;
   flex-wrap: wrap;
@@ -214,6 +259,14 @@ pre {
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .metadata-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .slide-image {
+    max-width: 240px;
   }
 
   dl {

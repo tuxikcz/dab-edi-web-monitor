@@ -42,6 +42,10 @@
   "ui": {
     "language": "cz"
   },
+  "metadata": {
+    "enabled": false,
+    "slideDir": "/tmp/dab-edi-web-monitor-metadata"
+  },
   "stations": [
     {
       "id": "first",

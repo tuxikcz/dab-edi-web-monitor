@@ -1,4 +1,6 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 function safeKillProcessGroup(child, signal) {
   if (!child?.pid) return;
@@ -55,6 +57,14 @@ export class StationWorker {
       sampleRate: null,
       channels: null,
       bitrate: null
+    };
+    this.currentMetadata = {
+      dynamicLabel: null,
+      dlPlus: [],
+      slide: null,
+      slideProgress: null,
+      updatedAt: null,
+      slideUpdatedAt: null
     };
     this.clients = new Set();
 
@@ -132,6 +142,11 @@ export class StationWorker {
       ...selectorArgs(this.station.selector),
       '-w'
     ];
+    const metadataDir = this.#metadataDir();
+    if (metadataDir) {
+      fs.mkdirSync(metadataDir, { recursive: true });
+      dablinArgs.push('-J', metadataDir);
+    }
 
     const ffmpegArgs = [
       '-nostdin',
@@ -231,12 +246,61 @@ export class StationWorker {
           .replace(/\x1b\][^\x07]*\x07/g, '')
           .trim();
         if (!line) continue;
-        if (sourceName === 'dablin') this.lastDablinMessage = line;
-        else this.lastFfmpegMessage = line;
-        if (sourceName === 'dablin') this.#captureDablinMetadata(line);
+        if (sourceName === 'dablin' && this.#capturePadMetadata(line)) continue;
+        if (sourceName === 'dablin') {
+          this.lastDablinMessage = line;
+          this.#captureDablinMetadata(line);
+        } else {
+          this.lastFfmpegMessage = line;
+        }
         this.log.error(`[${this.station.id}/${sourceName}] ${line}`);
       }
     });
+  }
+
+  #metadataDir() {
+    if (!this.config.metadata?.enabled) return null;
+    return path.join(this.config.metadata.slideDir, this.station.id);
+  }
+
+  #capturePadMetadata(line) {
+    if (!line.startsWith('{')) return false;
+
+    let event;
+    try {
+      event = JSON.parse(line);
+    } catch {
+      return false;
+    }
+
+    if (event.type === 'dynamic_label') {
+      this.currentMetadata.dynamicLabel = typeof event.text === 'string' ? event.text : null;
+      this.currentMetadata.dlPlus = Array.isArray(event.dl_plus) ? event.dl_plus : [];
+      this.currentMetadata.updatedAt = Date.now();
+      return true;
+    }
+
+    if (event.type === 'slideshow_progress') {
+      this.currentMetadata.slideProgress = Number.isFinite(event.fraction) ? event.fraction : null;
+      return true;
+    }
+
+    if (event.type === 'slideshow') {
+      this.currentMetadata.slideProgress = 1;
+      this.currentMetadata.slideUpdatedAt = Date.now();
+      this.currentMetadata.updatedAt = this.currentMetadata.slideUpdatedAt;
+      this.currentMetadata.slide = {
+        contentName: event.content_name ?? null,
+        contentType: event.content_type ?? null,
+        contentSubType: event.content_sub_type ?? null,
+        size: Number.isFinite(event.size) ? event.size : null,
+        url: `/api/slide/${encodeURIComponent(this.station.id)}?t=${this.currentMetadata.slideUpdatedAt}`,
+        file: typeof event.file === 'string' ? event.file : null
+      };
+      return true;
+    }
+
+    return false;
   }
 
   #captureDablinMetadata(line) {
@@ -381,6 +445,16 @@ export class StationWorker {
       bytesPcm: this.bytesPcm,
       bytesMp3: this.bytesMp3,
       currentService: this.currentService,
+      metadata: {
+        ...this.currentMetadata,
+        slide: this.currentMetadata.slide ? {
+          contentName: this.currentMetadata.slide.contentName,
+          contentType: this.currentMetadata.slide.contentType,
+          contentSubType: this.currentMetadata.slide.contentSubType,
+          size: this.currentMetadata.slide.size,
+          url: this.currentMetadata.slide.url
+        } : null
+      },
       clients: this.clients.size,
       restarts: this.restarts,
       lastRestartReason: this.lastRestartReason,
@@ -389,5 +463,14 @@ export class StationWorker {
       dablinPid: this.dablin?.pid ?? null,
       ffmpegPid: this.ffmpeg?.pid ?? null
     };
+  }
+
+  metadataSlideFile() {
+    const filename = this.currentMetadata.slide?.file;
+    const metadataDir = this.#metadataDir();
+    if (!filename || !metadataDir) return null;
+    const resolved = path.resolve(filename);
+    const root = path.resolve(metadataDir);
+    return resolved.startsWith(`${root}${path.sep}`) || resolved === root ? resolved : null;
   }
 }

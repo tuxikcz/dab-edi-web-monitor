@@ -107,6 +107,56 @@ Jazyk weboveho rozhrani lze nastavit v konfiguraci:
 
 Podporovane hodnoty jsou `cz`, `en` a `de`.
 
+DL texty, DL+ metadata a MOT slideshow obrazky vyzaduji DABlin s patchem
+`patches/dablin-pad-metadata.patch`. Po instalaci patchnuteho DABlinu je lze
+zapnout v konfiguraci:
+
+```json
+"metadata": {
+  "enabled": true,
+  "slideDir": "/tmp/dab-edi-web-monitor-metadata"
+}
+```
+
+Web potom zobrazi posledni textova metadata a aktualni slideshow obrazek
+u vybrane stanice. Bez patchnuteho DABlinu ponechte `enabled` na `false`.
+
+### Patch DABlinu pro PAD metadata
+
+Bezny konzolovy DABlin posila na stdout jen audio data. Patch
+`patches/dablin-pad-metadata.patch` doplni volby:
+
+- `-j` zapisuje DL/DL+/slideshow udalosti jako JSON lines na stderr;
+- `-J <adresar>` dela to same a navic uklada posledni MOT slideshow obrazek.
+
+Priklad sestaveni na Debianu:
+
+```bash
+apt update
+apt install git build-essential cmake pkg-config libfaad-dev libmpg123-dev
+git clone https://github.com/Opendigitalradio/dablin.git /tmp/dablin-src
+cd /tmp/dablin-src
+git apply /cesta/k/dab-edi-web-monitor/patches/dablin-pad-metadata.patch
+cmake -S . -B build -DDISABLE_SDL=1
+cmake --build build --target dablin -j"$(nproc)"
+sudo install -m 0755 build/src/dablin /usr/local/bin/dablin
+```
+
+Po instalaci overte, ze DABlin zna nove volby:
+
+```bash
+/usr/local/bin/dablin -h | grep -- "-J"
+```
+
+Pak lze v konfiguraci zapnout `metadata.enabled`. Pokud aplikace po zapnuti
+skonci hlaskou typu `unrecognized option`, stale se pouziva nepatchnuty DABlin
+nebo konfigurace `binaries.dablin` ukazuje na jinou binarku.
+
+Pokud DABlin skonci hlaskou `SDL output was disabled, so PCM output must be
+selected!` i pri argumentu `-w`, byl pravdepodobne sestaven ze starsi verze
+tohoto patche. Aktualizujte patch, znovu spustte `cmake --build ...` a binarku
+znovu nainstalujte.
+
 Pro stabilni produkcni pouziti nastavte konkretni SID:
 
 ```json
