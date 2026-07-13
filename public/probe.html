@@ -11,44 +11,44 @@
     <header>
       <div>
         <p class="eyebrow">DAB PROBE</p>
-        <h1>EDI stream probe</h1>
+        <h1 data-i18n="title">EDI stream probe</h1>
       </div>
-      <span id="probeBadge" class="badge bad">Nepřipojeno</span>
+      <span id="probeBadge" class="badge bad" data-i18n="disconnected">Nepřipojeno</span>
     </header>
 
     <section class="player-card">
       <form id="probeForm" class="probe-form">
         <label>
-          IP adresa / host
+          <span data-i18n="host">IP adresa / host</span>
           <input id="host" name="host" autocomplete="off" required placeholder="93.185.96.156">
         </label>
         <label>
-          Port
+          <span data-i18n="port">Port</span>
           <input id="port" name="port" type="number" min="1" max="65535" required placeholder="15000">
         </label>
         <label>
-          Formát
+          <span data-i18n="format">Formát</span>
           <select id="format" name="format">
             <option value="edi">EDI AF</option>
             <option value="eti">ETI-NI</option>
           </select>
         </label>
         <label>
-          Discovery
+          <span data-i18n="discovery">Discovery</span>
           <input id="discoverSeconds" name="discoverSeconds" type="number" min="1" max="60" value="8">
         </label>
-        <button id="probeButton" type="submit">Načíst stanice</button>
+        <button id="probeButton" type="submit" data-i18n="loadStations">Načíst stanice</button>
       </form>
       <p id="message" class="message"></p>
     </section>
 
     <section class="grid">
       <article>
-        <h2>Nalezené stanice</h2>
+        <h2 data-i18n="foundStations">Nalezené stanice</h2>
         <div id="services" class="station-list"></div>
       </article>
       <article>
-        <h2>Přehrávání</h2>
+        <h2 data-i18n="playback">Přehrávání</h2>
         <audio id="audio" controls preload="none"></audio>
         <dl id="playbackStatus"></dl>
       </article>
@@ -56,15 +56,15 @@
 
     <section class="grid">
       <article>
-        <h2>EDI vstup</h2>
+        <h2 data-i18n="ediInput">EDI vstup</h2>
         <dl id="ediStatus"></dl>
       </article>
       <article>
-        <h2>Dekodér stanice</h2>
+        <h2 data-i18n="decoder">Dekodér stanice</h2>
         <dl id="stationStatus"></dl>
       </article>
     </section>
   </main>
-  <script src="/probe.js?v=20260713-1"></script>
+  <script src="/probe.js?v=20260713-2"></script>
 </body>
 </html>

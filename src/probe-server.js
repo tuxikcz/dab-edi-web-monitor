@@ -224,7 +224,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && url.pathname === '/stream/probe.mp3') {
-      if (!worker) { res.writeHead(404); res.end('No active probe stream'); return; }
+      const clientWorker = worker;
+      if (!clientWorker) { res.writeHead(404); res.end('No active probe stream'); return; }
       res.writeHead(200, {
         'Content-Type': 'audio/mpeg',
         'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -232,12 +233,17 @@ const server = http.createServer(async (req, res) => {
         'Expires': '0',
         'Connection': 'keep-alive',
         'X-Accel-Buffering': 'no',
-        'icy-name': worker.station.name,
+        'icy-name': clientWorker.station.name,
         'icy-br': String(parseInt(config.audio.bitrate, 10) || 128)
       });
       res.flushHeaders();
-      worker.addClient(res);
-      const cleanup = () => worker.removeClient(res);
+      clientWorker.addClient(res);
+      let cleaned = false;
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        clientWorker.removeClient(res);
+      };
       req.on('close', cleanup);
       res.on('close', cleanup);
       res.on('error', cleanup);

@@ -14,6 +14,142 @@ const stationStatus = document.querySelector('#stationStatus');
 
 let statusTimer = null;
 let defaultsApplied = false;
+let language = 'cz';
+
+const dictionaries = {
+  cz: {
+    htmlLang: 'cs',
+    title: 'EDI stream probe',
+    disconnected: 'Nepřipojeno',
+    host: 'IP adresa / host',
+    port: 'Port',
+    format: 'Formát',
+    discovery: 'Discovery',
+    loadStations: 'Načíst stanice',
+    foundStations: 'Nalezené stanice',
+    playback: 'Přehrávání',
+    ediInput: 'EDI vstup',
+    decoder: 'Dekodér stanice',
+    never: 'nikdy',
+    seconds: 's',
+    minutes: 'min',
+    unknownService: 'Neznámá služba',
+    noStations: 'Zatím nejsou načtené žádné stanice.',
+    ediOnline: 'EDI online',
+    ediConnecting: 'EDI připojuji',
+    ediOffline: 'EDI offline',
+    stationsLoaded: 'Stanice načteny',
+    endpoint: 'Endpoint',
+    connection: 'Spojení',
+    connected: 'připojeno',
+    received: 'Přijato',
+    lastData: 'Poslední data',
+    reconnects: 'Reconnecty',
+    lastError: 'Poslední chyba',
+    stream: 'Stream',
+    selected: 'Vybráno',
+    state: 'Stav',
+    ensemble: 'Multiplex',
+    playing: 'Hraje',
+    loadingStations: 'Načítám seznam stanic…',
+    stationsFound: (count) => `Nalezeno ${count} stanic.`,
+    startingPlayback: 'Spouštím přehrávání…',
+    playbackStarted: 'Přehrávání spuštěno.',
+    browserWaits: 'Prohlížeč čeká na ruční spuštění'
+  },
+  en: {
+    htmlLang: 'en',
+    title: 'EDI stream probe',
+    disconnected: 'Disconnected',
+    host: 'IP address / host',
+    port: 'Port',
+    format: 'Format',
+    discovery: 'Discovery',
+    loadStations: 'Load stations',
+    foundStations: 'Found stations',
+    playback: 'Playback',
+    ediInput: 'EDI input',
+    decoder: 'Station decoder',
+    never: 'never',
+    seconds: 's',
+    minutes: 'min',
+    unknownService: 'Unknown service',
+    noStations: 'No stations loaded yet.',
+    ediOnline: 'EDI online',
+    ediConnecting: 'EDI connecting',
+    ediOffline: 'EDI offline',
+    stationsLoaded: 'Stations loaded',
+    endpoint: 'Endpoint',
+    connection: 'Connection',
+    connected: 'connected',
+    received: 'Received',
+    lastData: 'Last data',
+    reconnects: 'Reconnects',
+    lastError: 'Last error',
+    stream: 'Stream',
+    selected: 'Selected',
+    state: 'State',
+    ensemble: 'Ensemble',
+    playing: 'Playing',
+    loadingStations: 'Loading station list…',
+    stationsFound: (count) => `Found ${count} stations.`,
+    startingPlayback: 'Starting playback…',
+    playbackStarted: 'Playback started.',
+    browserWaits: 'Browser is waiting for manual start'
+  },
+  de: {
+    htmlLang: 'de',
+    title: 'EDI-Stream-Probe',
+    disconnected: 'Nicht verbunden',
+    host: 'IP-Adresse / Host',
+    port: 'Port',
+    format: 'Format',
+    discovery: 'Discovery',
+    loadStations: 'Stationen laden',
+    foundStations: 'Gefundene Stationen',
+    playback: 'Wiedergabe',
+    ediInput: 'EDI-Eingang',
+    decoder: 'Stationsdecoder',
+    never: 'nie',
+    seconds: 's',
+    minutes: 'Min.',
+    unknownService: 'Unbekannte Station',
+    noStations: 'Noch keine Stationen geladen.',
+    ediOnline: 'EDI online',
+    ediConnecting: 'EDI verbindet',
+    ediOffline: 'EDI offline',
+    stationsLoaded: 'Stationen geladen',
+    endpoint: 'Endpoint',
+    connection: 'Verbindung',
+    connected: 'verbunden',
+    received: 'Empfangen',
+    lastData: 'Letzte Daten',
+    reconnects: 'Reconnects',
+    lastError: 'Letzter Fehler',
+    stream: 'Stream',
+    selected: 'Ausgewählt',
+    state: 'Status',
+    ensemble: 'Ensemble',
+    playing: 'Spielt',
+    loadingStations: 'Stationsliste wird geladen…',
+    stationsFound: (count) => `${count} Stationen gefunden.`,
+    startingPlayback: 'Wiedergabe wird gestartet…',
+    playbackStarted: 'Wiedergabe gestartet.',
+    browserWaits: 'Browser wartet auf manuellen Start'
+  }
+};
+
+function t(key, ...args) {
+  const value = dictionaries[language]?.[key] ?? dictionaries.cz[key] ?? key;
+  return typeof value === 'function' ? value(...args) : value;
+}
+
+function applyTranslations() {
+  document.documentElement.lang = t('htmlLang');
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+}
 
 function rows(items) {
   return items.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('');
@@ -29,13 +165,15 @@ function bytes(value) {
 }
 
 function age(timestamp) {
-  if (!timestamp) return 'nikdy';
+  if (!timestamp) return t('never');
   const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
-  return seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+  return seconds < 60
+    ? `${seconds} ${t('seconds')}`
+    : `${Math.floor(seconds / 60)} ${t('minutes')} ${seconds % 60} ${t('seconds')}`;
 }
 
 function serviceName(service) {
-  return service?.label || service?.shortLabel || service?.sid || 'Neznámá služba';
+  return service?.label || service?.shortLabel || service?.sid || t('unknownService');
 }
 
 function serviceFormat(service) {
@@ -50,7 +188,7 @@ function serviceFormat(service) {
 
 function renderServices(list, activeSid) {
   if (!list?.length) {
-    services.innerHTML = '<p class="empty">Zatím nejsou načtené žádné stanice.</p>';
+    services.innerHTML = `<p class="empty">${t('noStations')}</p>`;
     return;
   }
 
@@ -72,6 +210,9 @@ function renderServices(list, activeSid) {
 }
 
 function renderStatus(status) {
+  language = ['cz', 'en', 'de'].includes(status.ui?.language) ? status.ui.language : 'cz';
+  applyTranslations();
+
   const edi = status.edi;
   const station = status.station;
   const activeSid = status.activeService?.sid ?? null;
@@ -87,40 +228,40 @@ function renderStatus(status) {
   renderServices(status.probe?.services ?? [], activeSid);
 
   if (edi) {
-    probeBadge.textContent = edi.connected ? 'EDI online' : (edi.connecting ? 'EDI připojuji' : 'EDI offline');
+    probeBadge.textContent = edi.connected ? t('ediOnline') : (edi.connecting ? t('ediConnecting') : t('ediOffline'));
     probeBadge.className = `badge ${edi.connected ? 'ok' : 'bad'}`;
     ediStatus.innerHTML = rows([
-      ['Endpoint', `${edi.host}:${edi.port}`],
-      ['Spojení', edi.connected ? 'připojeno' : 'odpojeno'],
-      ['Poslední data', age(edi.lastDataAt)],
-      ['Přijato', bytes(edi.bytesReceived)],
-      ['Reconnecty', edi.reconnects],
-      ['Poslední chyba', edi.lastError ?? '—']
+      [t('endpoint'), `${edi.host}:${edi.port}`],
+      [t('connection'), edi.connected ? t('connected') : t('disconnected')],
+      [t('lastData'), age(edi.lastDataAt)],
+      [t('received'), bytes(edi.bytesReceived)],
+      [t('reconnects'), edi.reconnects],
+      [t('lastError'), edi.lastError ?? '—']
     ]);
   } else {
-    probeBadge.textContent = status.probe?.services?.length ? 'Stanice načteny' : 'Nepřipojeno';
+    probeBadge.textContent = status.probe?.services?.length ? t('stationsLoaded') : t('disconnected');
     probeBadge.className = `badge ${status.probe?.services?.length ? 'ok' : 'bad'}`;
     ediStatus.innerHTML = rows([
-      ['Endpoint', status.probe?.edi ? `${status.probe.edi.host}:${status.probe.edi.port}` : '—'],
-      ['Spojení', '—'],
-      ['Poslední data', '—'],
-      ['Přijato', '—']
+      [t('endpoint'), status.probe?.edi ? `${status.probe.edi.host}:${status.probe.edi.port}` : '—'],
+      [t('connection'), '—'],
+      [t('lastData'), '—'],
+      [t('received'), '—']
     ]);
   }
 
   playbackStatus.innerHTML = rows([
-    ['Stream', status.stream ?? '—'],
-    ['Vybráno', serviceName(status.activeService)]
+    [t('stream'), status.stream ?? '—'],
+    [t('selected'), serviceName(status.activeService)]
   ]);
 
   stationStatus.innerHTML = rows([
-    ['Stav', station?.state ?? '—'],
-    ['Multiplex', station?.currentEnsemble?.label || station?.currentEnsemble?.id || '—'],
+    [t('state'), station?.state ?? '—'],
+    [t('ensemble'), station?.currentEnsemble?.label || station?.currentEnsemble?.id || '—'],
     ['EId', station?.currentEnsemble?.id ?? '—'],
-    ['Hraje', serviceName(station?.currentService)],
+    [t('playing'), serviceName(station?.currentService)],
     ['SID', station?.currentService?.sid ?? status.activeService?.sid ?? '—'],
     ['SubChId', station?.currentService?.subChannelId ?? '—'],
-    ['Formát', serviceFormat(station?.currentService)]
+    [t('format'), serviceFormat(station?.currentService)]
   ]);
 }
 
@@ -133,7 +274,7 @@ async function fetchStatus() {
 async function probe(event) {
   event.preventDefault();
   probeButton.disabled = true;
-  message.textContent = 'Načítám seznam stanic…';
+  message.textContent = t('loadingStations');
   audio.pause();
   audio.removeAttribute('src');
   audio.load();
@@ -148,7 +289,7 @@ async function probe(event) {
     const status = await response.json();
     renderStatus(status);
     message.textContent = response.ok
-      ? `Nalezeno ${status.probe.services.length} stanic.`
+      ? t('stationsFound', status.probe.services.length)
       : (status.probe?.error || status.error || `HTTP ${response.status}`);
   } catch (error) {
     message.textContent = error.message;
@@ -158,7 +299,7 @@ async function probe(event) {
 }
 
 async function play(sid) {
-  message.textContent = 'Spouštím přehrávání…';
+  message.textContent = t('startingPlayback');
   const response = await fetch('/api/play', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -174,9 +315,9 @@ async function play(sid) {
   audio.src = `${status.stream}?t=${Date.now()}`;
   audio.load();
   audio.play().then(() => {
-    message.textContent = 'Přehrávání spuštěno.';
+    message.textContent = t('playbackStarted');
   }).catch((error) => {
-    message.textContent = `Prohlížeč čeká na ruční spuštění: ${error.message}`;
+    message.textContent = `${t('browserWaits')}: ${error.message}`;
   });
 }
 
