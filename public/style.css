@@ -100,17 +100,23 @@ label {
 }
 
 select,
-button {
+button,
+input {
   border: 1px solid #3a414b;
   border-radius: 4px;
   font: inherit;
 }
 
-select {
+select,
+input {
   width: 100%;
   padding: 9px 10px;
   background: #111418;
   color: #e9edf2;
+}
+
+input::placeholder {
+  color: #667080;
 }
 
 audio {
@@ -190,6 +196,54 @@ button.secondary:hover {
   background: #2a313b;
 }
 
+.probe-form {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.4fr) minmax(100px, .65fr) minmax(120px, .75fr) minmax(110px, .65fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.probe-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.station-list {
+  display: grid;
+  gap: 8px;
+}
+
+.station-option {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: #1d232b;
+}
+
+.station-option:hover,
+.station-option.active {
+  background: #26313b;
+}
+
+.station-option span {
+  color: #f0f2f5;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.station-option small {
+  color: #9aa4b2;
+  font-size: .82rem;
+}
+
+.empty {
+  margin: 0;
+  color: #9aa4b2;
+  font-size: .9rem;
+}
+
 .message {
   min-height: 1.2em;
   margin: 0;
@@ -258,6 +312,10 @@ pre {
   }
 
   .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .probe-form {
     grid-template-columns: 1fr;
   }
 

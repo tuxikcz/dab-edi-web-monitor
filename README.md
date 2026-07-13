@@ -4,6 +4,8 @@ A simple internal web player for DAB/DAB+ services from an EDI stream. Node.js k
 
 The project does not use a shell pipeline. If DABlin or FFmpeg crashes, stalls, or gets blocked, Node terminates both process groups and starts the whole decoding chain again. The systemd unit also uses `KillMode=control-group`, so no orphaned processes remain after a service restart.
 
+![Screenshot](image.png)
+
 ## Requirements
 
 - Linux, Debian 12/13 recommended
@@ -61,7 +63,7 @@ In an external HTML5 player, use:
 The default endpoint is set to:
 
 ```text
-93.185.96.156:15000
+127.0.0.1:15000
 ```
 
 This endpoint sends ETI-NI data, so `config.json` uses:
