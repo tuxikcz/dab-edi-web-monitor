@@ -51,6 +51,14 @@
         <h2 data-i18n="playback">Přehrávání</h2>
         <audio id="audio" controls preload="none"></audio>
         <dl id="playbackStatus"></dl>
+        <div id="metadataPanel" class="metadata-panel no-slide probe-metadata-panel">
+          <img id="slideImage" class="slide-image" alt="" hidden>
+          <div class="metadata-copy">
+            <h2 data-i18n="nowPlaying">Právě hraje</h2>
+            <p id="dynamicLabel" class="dynamic-label" data-i18n="noMetadata">Bez textových metadat.</p>
+            <dl id="dlPlus" class="dl-plus"></dl>
+          </div>
+        </div>
       </article>
     </section>
 
@@ -65,6 +73,6 @@
       </article>
     </section>
   </main>
-  <script src="/probe.js?v=20260713-2"></script>
+  <script src="/probe.js?v=20260713-3"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseServiceLabelLine } from './service-discovery.js';
 
 function safeKillProcessGroup(child, signal) {
   if (!child?.pid) return;
@@ -337,11 +338,13 @@ export class StationWorker {
       return;
     }
 
-    const labelMatch = line.match(/FICDecoder: SId (0x[0-9A-Fa-f]+): programme service label '([^']*)' \('([^']*)'\)/);
-    if (labelMatch && (!this.currentService.sid || labelMatch[1].toLowerCase() === this.currentService.sid.toLowerCase())) {
-      this.currentService.sid = labelMatch[1];
-      this.currentService.label = labelMatch[2];
-      this.currentService.shortLabel = labelMatch[3];
+    const label = parseServiceLabelLine(line);
+    if (label && (!this.currentService.sid || label.sid.toLowerCase() === this.currentService.sid.toLowerCase())) {
+      this.currentService.sid = label.sid;
+      if (label.type === 'programme' || !this.currentService.label) {
+        this.currentService.label = label.label;
+        this.currentService.shortLabel = label.shortLabel;
+      }
     }
   }
 

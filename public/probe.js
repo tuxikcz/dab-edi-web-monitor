@@ -11,6 +11,10 @@ const audio = document.querySelector('#audio');
 const playbackStatus = document.querySelector('#playbackStatus');
 const ediStatus = document.querySelector('#ediStatus');
 const stationStatus = document.querySelector('#stationStatus');
+const metadataPanel = document.querySelector('#metadataPanel');
+const dynamicLabel = document.querySelector('#dynamicLabel');
+const dlPlus = document.querySelector('#dlPlus');
+const slideImage = document.querySelector('#slideImage');
 
 let statusTimer = null;
 let defaultsApplied = false;
@@ -51,6 +55,14 @@ const dictionaries = {
     state: 'Stav',
     ensemble: 'Multiplex',
     playing: 'Hraje',
+    nowPlaying: 'Právě hraje',
+    noMetadata: 'Bez textových metadat.',
+    artist: 'Interpret',
+    songTitle: 'Skladba',
+    homepage: 'Web',
+    stationName: 'Stanice',
+    programme: 'Program',
+    slideAlt: 'Doprovodný obrázek stanice',
     loadingStations: 'Načítám seznam stanic…',
     stationsFound: (count) => `Nalezeno ${count} stanic.`,
     startingPlayback: 'Spouštím přehrávání…',
@@ -91,6 +103,14 @@ const dictionaries = {
     state: 'State',
     ensemble: 'Ensemble',
     playing: 'Playing',
+    nowPlaying: 'Now playing',
+    noMetadata: 'No text metadata.',
+    artist: 'Artist',
+    songTitle: 'Title',
+    homepage: 'Homepage',
+    stationName: 'Station',
+    programme: 'Programme',
+    slideAlt: 'Station slideshow image',
     loadingStations: 'Loading station list…',
     stationsFound: (count) => `Found ${count} stations.`,
     startingPlayback: 'Starting playback…',
@@ -131,6 +151,14 @@ const dictionaries = {
     state: 'Status',
     ensemble: 'Ensemble',
     playing: 'Spielt',
+    nowPlaying: 'Aktuell',
+    noMetadata: 'Keine Textmetadaten.',
+    artist: 'Interpret',
+    songTitle: 'Titel',
+    homepage: 'Web',
+    stationName: 'Station',
+    programme: 'Programm',
+    slideAlt: 'Begleitbild der Station',
     loadingStations: 'Stationsliste wird geladen…',
     stationsFound: (count) => `${count} Stationen gefunden.`,
     startingPlayback: 'Wiedergabe wird gestartet…',
@@ -153,6 +181,17 @@ function applyTranslations() {
 
 function rows(items) {
   return items.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('');
+}
+
+function textRows(items) {
+  dlPlus.replaceChildren();
+  for (const [key, value] of items) {
+    const dt = document.createElement('dt');
+    const dd = document.createElement('dd');
+    dt.textContent = key;
+    dd.textContent = value;
+    dlPlus.append(dt, dd);
+  }
 }
 
 function bytes(value) {
@@ -184,6 +223,41 @@ function serviceFormat(service) {
     service?.bitrate
   ].filter(Boolean);
   return parts.join(', ') || '—';
+}
+
+function dlPlusLabel(item) {
+  const type = item?.content_type_name ?? '';
+  if (type === 'ITEM.ARTIST') return t('artist');
+  if (type === 'ITEM.TITLE') return t('songTitle');
+  if (type === 'PROGRAMME.HOMEPAGE') return t('homepage');
+  if (type === 'STATIONNAME.SHORT' || type === 'STATIONNAME.LONG') return t('stationName');
+  if (type.startsWith('PROGRAMME.')) return t('programme');
+  return type || 'DL+';
+}
+
+function renderMetadata(station) {
+  const metadata = station?.metadata ?? {};
+  dynamicLabel.textContent = metadata.dynamicLabel || t('noMetadata');
+
+  const items = (metadata.dlPlus ?? [])
+    .map((item) => [dlPlusLabel(item), String(item?.text ?? '').trim()])
+    .filter(([, value]) => value);
+  textRows(items);
+
+  if (metadata.slide?.url) {
+    const probeSlideUrl = `/api/slide/probe?t=${encodeURIComponent(metadata.slideUpdatedAt ?? Date.now())}`;
+    if (slideImage.getAttribute('src') !== probeSlideUrl) {
+      slideImage.src = probeSlideUrl;
+    }
+    slideImage.alt = t('slideAlt');
+    slideImage.hidden = false;
+    metadataPanel.classList.remove('no-slide');
+  } else {
+    slideImage.removeAttribute('src');
+    slideImage.alt = '';
+    slideImage.hidden = true;
+    metadataPanel.classList.add('no-slide');
+  }
 }
 
 function renderServices(list, activeSid) {
@@ -263,6 +337,7 @@ function renderStatus(status) {
     ['SubChId', station?.currentService?.subChannelId ?? '—'],
     [t('format'), serviceFormat(station?.currentService)]
   ]);
+  renderMetadata(station);
 }
 
 async function fetchStatus() {

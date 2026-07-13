@@ -168,6 +168,10 @@ audio {
   font-size: .86rem;
 }
 
+.probe-metadata-panel {
+  margin-top: 14px;
+}
+
 .buttons {
   display: flex;
   flex-wrap: wrap;

@@ -78,6 +78,16 @@ function staticFile(res, relativePath) {
   res.end(data);
 }
 
+function slideContentType(filename) {
+  switch (path.extname(filename).toLowerCase()) {
+    case '.jpg':
+    case '.jpeg': return 'image/jpeg';
+    case '.png': return 'image/png';
+    case '.gif': return 'image/gif';
+    default: return 'application/octet-stream';
+  }
+}
+
 function parseProbeRequest(input) {
   const host = String(input.host ?? '').trim();
   const port = Number.parseInt(input.port, 10);
@@ -220,6 +230,26 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/stop') {
       await stopPlayback();
       json(res, 200, statusPayload());
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/slide/probe') {
+      const clientWorker = worker;
+      const filename = clientWorker?.metadataSlideFile();
+      if (!clientWorker || !filename) { res.writeHead(404); res.end('No slide'); return; }
+
+      let stat;
+      try { stat = fs.statSync(filename); } catch {
+        res.writeHead(404); res.end('No slide'); return;
+      }
+      if (!stat.isFile()) { res.writeHead(404); res.end('No slide'); return; }
+
+      res.writeHead(200, {
+        'Content-Type': slideContentType(filename),
+        'Content-Length': stat.size,
+        'Cache-Control': 'no-store'
+      });
+      fs.createReadStream(filename).pipe(res);
       return;
     }
 

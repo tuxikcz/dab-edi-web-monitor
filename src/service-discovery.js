@@ -21,6 +21,17 @@ function rememberService(services, sid) {
   return service;
 }
 
+export function parseServiceLabelLine(line) {
+  const match = line.match(/^FICDecoder: SId (0x[0-9A-Fa-f]+)(?:, SCIdS\s+\d+)?: (programme service|service component) label '(.*)' \('(.*)'\)$/);
+  if (!match) return null;
+  return {
+    sid: match[1],
+    type: match[2] === 'programme service' ? 'programme' : 'component',
+    label: match[3],
+    shortLabel: match[4]
+  };
+}
+
 function parseServiceLine(services, line) {
   const audioMatch = line.match(/FICDecoder: SId (0x[0-9A-Fa-f]+): audio service \(SubChId\s+(\d+),/);
   if (audioMatch) {
@@ -29,11 +40,13 @@ function parseServiceLine(services, line) {
     return;
   }
 
-  const labelMatch = line.match(/FICDecoder: SId (0x[0-9A-Fa-f]+): programme service label '([^']*)' \('([^']*)'\)/);
-  if (labelMatch) {
-    const service = rememberService(services, labelMatch[1]);
-    service.label = labelMatch[2];
-    service.shortLabel = labelMatch[3];
+  const label = parseServiceLabelLine(line);
+  if (label) {
+    const service = rememberService(services, label.sid);
+    if (label.type === 'programme' || !service.label) {
+      service.label = label.label;
+      service.shortLabel = label.shortLabel;
+    }
   }
 }
 
