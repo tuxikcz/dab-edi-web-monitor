@@ -1,10 +1,10 @@
 import http from 'node:http';
 import fs from 'node:fs';
-import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, normalizeEdiHost } from './config.js';
 import { EdiSource } from './edi-source.js';
+import { correctEdiFormat } from './edi-format.js';
 import { StationWorker } from './station-worker.js';
 import { discoverServices } from './service-discovery.js';
 
@@ -129,36 +129,8 @@ function orderedServices(services) {
   });
 }
 
-async function detectEdiAf(edi) {
-  return await new Promise((resolve) => {
-    let done = false;
-    const socket = net.createConnection({ host: edi.host, port: edi.port });
-
-    function finish(value) {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      socket.destroy();
-      resolve(value);
-    }
-
-    const timer = setTimeout(() => finish(false), Math.min(edi.dataTimeoutMs, 3000));
-    timer.unref();
-
-    socket.on('data', (chunk) => {
-      finish(chunk.length >= 2 && chunk[0] === 0x41 && chunk[1] === 0x46);
-    });
-    socket.on('error', () => finish(false));
-    socket.on('close', () => finish(false));
-  });
-}
-
 async function correctProbeFormat(edi) {
-  if (edi.format === 'edi') return edi;
-  if (!await detectEdiAf(edi)) return edi;
-
-  log.info(`[probe] ${edi.host}:${edi.port} vypada jako EDI AF, prepinam format z eti na edi`);
-  return { ...edi, format: 'edi', detectedFormat: 'edi' };
+  return await correctEdiFormat(edi, log, 'probe');
 }
 
 async function stopPlayback() {

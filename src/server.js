@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { timingSafeEqual } from 'node:crypto';
 import { loadConfig } from './config.js';
 import { EdiSource } from './edi-source.js';
+import { correctEdiFormat } from './edi-format.js';
 import { StationWorker } from './station-worker.js';
 import { resolveServiceIndexSelectors } from './service-discovery.js';
 
@@ -93,6 +94,7 @@ function slideContentType(filename) {
 }
 
 log.info(`konfigurace: ${resolvedPath}`);
+config.edi = await correctEdiFormat(config.edi, log);
 const stations = await resolveServiceIndexSelectors(config, config.stations, log);
 const source = new EdiSource(config.edi, log);
 const workers = new Map();
