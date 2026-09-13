@@ -9,6 +9,7 @@ const message = document.querySelector('#message');
 const services = document.querySelector('#services');
 const audio = document.querySelector('#audio');
 const playbackStatus = document.querySelector('#playbackStatus');
+const diagnostic = document.querySelector('#diagnostic');
 const ediStatus = document.querySelector('#ediStatus');
 const stationStatus = document.querySelector('#stationStatus');
 const metadataPanel = document.querySelector('#metadataPanel');
@@ -39,6 +40,10 @@ const dictionaries = {
     minutes: 'min',
     unknownService: 'Neznámá služba',
     noStations: 'Zatím nejsou načtené žádné stanice.',
+    noDiagnostics: 'Bez diagnostických hlášení.',
+    restartReason: 'Restart',
+    collapse: 'Skrýt',
+    expand: 'Zobrazit',
     ediOnline: 'EDI online',
     ediConnecting: 'EDI připojuji',
     ediOffline: 'EDI offline',
@@ -87,6 +92,10 @@ const dictionaries = {
     minutes: 'min',
     unknownService: 'Unknown service',
     noStations: 'No stations loaded yet.',
+    noDiagnostics: 'No diagnostic messages.',
+    restartReason: 'Restart',
+    collapse: 'Hide',
+    expand: 'Show',
     ediOnline: 'EDI online',
     ediConnecting: 'EDI connecting',
     ediOffline: 'EDI offline',
@@ -135,6 +144,10 @@ const dictionaries = {
     minutes: 'Min.',
     unknownService: 'Unbekannte Station',
     noStations: 'Noch keine Stationen geladen.',
+    noDiagnostics: 'Keine Diagnosemeldungen.',
+    restartReason: 'Restart',
+    collapse: 'Ausblenden',
+    expand: 'Anzeigen',
     ediOnline: 'EDI online',
     ediConnecting: 'EDI verbindet',
     ediOffline: 'EDI offline',
@@ -176,6 +189,28 @@ function applyTranslations() {
   document.documentElement.lang = t('htmlLang');
   document.querySelectorAll('[data-i18n]').forEach((element) => {
     element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll('.panel-toggle').forEach((button) => {
+    const expanded = button.getAttribute('aria-expanded') !== 'false';
+    button.textContent = expanded ? '⌄' : '›';
+    button.setAttribute('aria-label', t(expanded ? button.dataset.i18nExpanded : button.dataset.i18nCollapsed));
+  });
+}
+
+function setupCollapsiblePanels() {
+  document.querySelectorAll('[data-collapsible]').forEach((panel) => {
+    const button = panel.querySelector('.panel-toggle');
+    const body = panel.querySelector('.panel-body');
+    if (!button || !body) return;
+
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') !== 'false';
+      button.setAttribute('aria-expanded', String(!expanded));
+      body.hidden = expanded;
+      panel.classList.toggle('collapsed', expanded);
+      button.textContent = expanded ? '›' : '⌄';
+      button.setAttribute('aria-label', t(expanded ? button.dataset.i18nCollapsed : button.dataset.i18nExpanded));
+    });
   });
 }
 
@@ -337,6 +372,11 @@ function renderStatus(status) {
     ['SubChId', station?.currentService?.subChannelId ?? '—'],
     [t('format'), serviceFormat(station?.currentService)]
   ]);
+  diagnostic.textContent = [
+    station?.lastRestartReason ? `${t('restartReason')}: ${station.lastRestartReason}` : null,
+    station?.lastDablinMessage ? `DABlin: ${station.lastDablinMessage}` : null,
+    station?.lastFfmpegMessage ? `FFmpeg: ${station.lastFfmpegMessage}` : null
+  ].filter(Boolean).join('\n') || t('noDiagnostics');
   renderMetadata(station);
 }
 
@@ -397,6 +437,7 @@ async function play(sid) {
 }
 
 form.addEventListener('submit', probe);
+setupCollapsiblePanels();
 
 fetchStatus().catch((error) => {
   message.textContent = error.message;

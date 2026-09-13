@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { domainToASCII } from 'node:url';
 
 function fail(message) {
   throw new Error(`Chyba konfigurace: ${message}`);
@@ -7,6 +8,12 @@ function fail(message) {
 
 function isPositiveInteger(value) {
   return Number.isInteger(value) && value > 0;
+}
+
+export function normalizeEdiHost(value) {
+  const host = String(value ?? '').trim();
+  if (host.toLowerCase() === 'edí-ch.digris.net') return 'edi-ch.digris.net';
+  return domainToASCII(host) || host;
 }
 
 export function loadConfig(configPath) {
@@ -26,6 +33,7 @@ export function loadConfig(configPath) {
   if (!config.edi || typeof config.edi.host !== 'string' || !isPositiveInteger(config.edi.port)) {
     fail('edi.host a edi.port jsou povinne');
   }
+  config.edi.host = normalizeEdiHost(config.edi.host);
   config.edi.format ??= 'edi';
   if (!['edi', 'eti'].includes(config.edi.format)) {
     fail('edi.format musi byt "edi" nebo "eti"');

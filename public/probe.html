@@ -43,36 +43,57 @@
     </section>
 
     <section class="grid">
-      <article>
-        <h2 data-i18n="foundStations">Nalezené stanice</h2>
-        <div id="services" class="station-list"></div>
+      <article data-collapsible>
+        <div class="panel-header">
+          <h2 data-i18n="ediInput">EDI vstup</h2>
+          <button class="panel-toggle secondary" type="button" aria-expanded="true" data-i18n-expanded="collapse" data-i18n-collapsed="expand" aria-label="Skrýt">⌄</button>
+        </div>
+        <div class="panel-body">
+          <dl id="ediStatus"></dl>
+        </div>
       </article>
-      <article>
-        <h2 data-i18n="playback">Přehrávání</h2>
-        <audio id="audio" controls preload="none"></audio>
-        <dl id="playbackStatus"></dl>
-        <div id="metadataPanel" class="metadata-panel no-slide probe-metadata-panel">
-          <img id="slideImage" class="slide-image" alt="" hidden>
-          <div class="metadata-copy">
-            <h2 data-i18n="nowPlaying">Právě hraje</h2>
-            <p id="dynamicLabel" class="dynamic-label" data-i18n="noMetadata">Bez textových metadat.</p>
-            <dl id="dlPlus" class="dl-plus"></dl>
-          </div>
+      <article data-collapsible>
+        <div class="panel-header">
+          <h2 data-i18n="decoder">Dekodér stanice</h2>
+          <button class="panel-toggle secondary" type="button" aria-expanded="true" data-i18n-expanded="collapse" data-i18n-collapsed="expand" aria-label="Skrýt">⌄</button>
+        </div>
+        <div class="panel-body">
+          <dl id="stationStatus"></dl>
         </div>
       </article>
     </section>
 
     <section class="grid">
-      <article>
-        <h2 data-i18n="ediInput">EDI vstup</h2>
-        <dl id="ediStatus"></dl>
+      <article data-collapsible>
+        <div class="panel-header">
+          <h2 data-i18n="foundStations">Nalezené stanice</h2>
+          <button class="panel-toggle secondary" type="button" aria-expanded="true" data-i18n-expanded="collapse" data-i18n-collapsed="expand" aria-label="Skrýt">⌄</button>
+        </div>
+        <div class="panel-body">
+          <div id="services" class="station-list"></div>
+        </div>
       </article>
-      <article>
-        <h2 data-i18n="decoder">Dekodér stanice</h2>
-        <dl id="stationStatus"></dl>
+      <article data-collapsible>
+        <div class="panel-header">
+          <h2 data-i18n="playback">Přehrávání</h2>
+          <button class="panel-toggle secondary" type="button" aria-expanded="true" data-i18n-expanded="collapse" data-i18n-collapsed="expand" aria-label="Skrýt">⌄</button>
+        </div>
+        <div class="panel-body">
+          <audio id="audio" controls preload="none"></audio>
+          <dl id="playbackStatus"></dl>
+          <pre id="diagnostic" data-i18n="waiting">Čekám na stav…</pre>
+          <div id="metadataPanel" class="metadata-panel no-slide probe-metadata-panel">
+            <img id="slideImage" class="slide-image" alt="" hidden>
+            <div class="metadata-copy">
+              <h2 data-i18n="nowPlaying">Právě hraje</h2>
+              <p id="dynamicLabel" class="dynamic-label" data-i18n="noMetadata">Bez textových metadat.</p>
+              <dl id="dlPlus" class="dl-plus"></dl>
+            </div>
+          </div>
+        </div>
       </article>
     </section>
   </main>
-  <script src="/probe.js?v=20260713-3"></script>
+  <script src="/probe.js?v=20260713-4"></script>
 </body>
 </html>

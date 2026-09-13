@@ -2,7 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadConfig } from './config.js';
+import { loadConfig, normalizeEdiHost } from './config.js';
 import { EdiSource } from './edi-source.js';
 import { StationWorker } from './station-worker.js';
 import { discoverServices } from './service-discovery.js';
@@ -89,7 +89,7 @@ function slideContentType(filename) {
 }
 
 function parseProbeRequest(input) {
-  const host = String(input.host ?? '').trim();
+  const host = normalizeEdiHost(input.host);
   const port = Number.parseInt(input.port, 10);
   const format = String(input.format ?? 'edi').trim();
   const discoverSeconds = Number.parseInt(input.discoverSeconds ?? config.stream.discoverSeconds ?? 8, 10);

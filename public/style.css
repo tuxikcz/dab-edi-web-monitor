@@ -46,6 +46,33 @@ h2 {
   font-weight: 650;
 }
 
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panel-header h2 {
+  margin: 0;
+}
+
+.panel-toggle {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+article.collapsed {
+  padding-bottom: 14px;
+}
+
 .eyebrow {
   margin: 0 0 5px;
   color: #8a94a3;
