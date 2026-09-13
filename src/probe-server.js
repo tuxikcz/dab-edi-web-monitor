@@ -148,8 +148,12 @@ async function replacePlayback(service) {
     selector: { type: 'sid', value: service.sid },
     discoveredService: service
   };
+  const workerConfig = {
+    ...config,
+    edi: probe.edi
+  };
   source = new EdiSource(probe.edi, log);
-  worker = new StationWorker(station, source, config, log);
+  worker = new StationWorker(station, source, workerConfig, log);
   activeService = service;
   worker.start();
   source.start();
