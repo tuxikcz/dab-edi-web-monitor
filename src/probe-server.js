@@ -1,5 +1,6 @@
 import http from 'node:http';
 import fs from 'node:fs';
+import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, normalizeEdiHost } from './config.js';
@@ -91,7 +92,7 @@ function slideContentType(filename) {
 function parseProbeRequest(input) {
   const host = normalizeEdiHost(input.host);
   const port = Number.parseInt(input.port, 10);
-  const format = String(input.format ?? 'edi').trim();
+  const format = String(input.format ?? 'edi').trim().toLowerCase();
   const discoverSeconds = Number.parseInt(input.discoverSeconds ?? config.stream.discoverSeconds ?? 8, 10);
 
   if (!host) throw new Error('Host je povinny');
@@ -128,6 +129,38 @@ function orderedServices(services) {
   });
 }
 
+async function detectEdiAf(edi) {
+  return await new Promise((resolve) => {
+    let done = false;
+    const socket = net.createConnection({ host: edi.host, port: edi.port });
+
+    function finish(value) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      socket.destroy();
+      resolve(value);
+    }
+
+    const timer = setTimeout(() => finish(false), Math.min(edi.dataTimeoutMs, 3000));
+    timer.unref();
+
+    socket.on('data', (chunk) => {
+      finish(chunk.length >= 2 && chunk[0] === 0x41 && chunk[1] === 0x46);
+    });
+    socket.on('error', () => finish(false));
+    socket.on('close', () => finish(false));
+  });
+}
+
+async function correctProbeFormat(edi) {
+  if (edi.format === 'edi') return edi;
+  if (!await detectEdiAf(edi)) return edi;
+
+  log.info(`[probe] ${edi.host}:${edi.port} vypada jako EDI AF, prepinam format z eti na edi`);
+  return { ...edi, format: 'edi', detectedFormat: 'edi' };
+}
+
 async function stopPlayback() {
   const currentWorker = worker;
   const currentSource = source;
@@ -141,6 +174,8 @@ async function stopPlayback() {
 async function replacePlayback(service) {
   stoppingPlayback = stoppingPlayback.then(stopPlayback, stopPlayback);
   await stoppingPlayback;
+
+  probe.edi = await correctProbeFormat(probe.edi);
 
   const station = {
     id: 'probe',
@@ -194,7 +229,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && url.pathname === '/api/probe') {
-      const edi = parseProbeRequest(await readJson(req));
+      const edi = await correctProbeFormat(parseProbeRequest(await readJson(req)));
       await stopPlayback();
       const discoveryConfig = {
         ...config,

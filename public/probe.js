@@ -49,6 +49,7 @@ const dictionaries = {
     ediOffline: 'EDI offline',
     stationsLoaded: 'Stanice načteny',
     endpoint: 'Endpoint',
+    inputFormat: 'Formát vstupu',
     connection: 'Spojení',
     connected: 'připojeno',
     received: 'Přijato',
@@ -101,6 +102,7 @@ const dictionaries = {
     ediOffline: 'EDI offline',
     stationsLoaded: 'Stations loaded',
     endpoint: 'Endpoint',
+    inputFormat: 'Input format',
     connection: 'Connection',
     connected: 'connected',
     received: 'Received',
@@ -153,6 +155,7 @@ const dictionaries = {
     ediOffline: 'EDI offline',
     stationsLoaded: 'Stationen geladen',
     endpoint: 'Endpoint',
+    inputFormat: 'Eingangsformat',
     connection: 'Verbindung',
     connected: 'verbunden',
     received: 'Empfangen',
@@ -341,6 +344,7 @@ function renderStatus(status) {
     probeBadge.className = `badge ${edi.connected ? 'ok' : 'bad'}`;
     ediStatus.innerHTML = rows([
       [t('endpoint'), `${edi.host}:${edi.port}`],
+      [t('inputFormat'), edi.format ?? status.probe?.edi?.format ?? '—'],
       [t('connection'), edi.connected ? t('connected') : t('disconnected')],
       [t('lastData'), age(edi.lastDataAt)],
       [t('received'), bytes(edi.bytesReceived)],
@@ -352,6 +356,7 @@ function renderStatus(status) {
     probeBadge.className = `badge ${status.probe?.services?.length ? 'ok' : 'bad'}`;
     ediStatus.innerHTML = rows([
       [t('endpoint'), status.probe?.edi ? `${status.probe.edi.host}:${status.probe.edi.port}` : '—'],
+      [t('inputFormat'), status.probe?.edi?.format ?? '—'],
       [t('connection'), '—'],
       [t('lastData'), '—'],
       [t('received'), '—']
@@ -374,6 +379,7 @@ function renderStatus(status) {
   ]);
   diagnostic.textContent = [
     station?.lastRestartReason ? `${t('restartReason')}: ${station.lastRestartReason}` : null,
+    station?.lastDablinArgs ? `DABlin args: ${station.lastDablinArgs.join(' ')}` : null,
     station?.lastDablinMessage ? `DABlin: ${station.lastDablinMessage}` : null,
     station?.lastFfmpegMessage ? `FFmpeg: ${station.lastFfmpegMessage}` : null
   ].filter(Boolean).join('\n') || t('noDiagnostics');

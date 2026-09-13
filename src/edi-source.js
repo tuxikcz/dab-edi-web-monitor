@@ -140,6 +140,7 @@ export class EdiSource extends EventEmitter {
     return {
       host: this.options.host,
       port: this.options.port,
+      format: this.options.format ?? null,
       connected: this.connected,
       connecting: this.connecting,
       connectedAt: this.connectedAt || null,

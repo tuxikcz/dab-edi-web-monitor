@@ -49,6 +49,7 @@ export class StationWorker {
     this.lastRestartReason = null;
     this.lastDablinMessage = null;
     this.lastFfmpegMessage = null;
+    this.lastDablinArgs = null;
     this.currentService = {
       sid: station.discoveredService?.sid ?? (station.selector.type === 'sid' ? station.selector.value : null),
       label: station.discoveredService?.label ?? null,
@@ -177,6 +178,7 @@ export class StationWorker {
     ];
 
     this.log.info(`[${this.station.id}] start dablin ${dablinArgs.join(' ')}`);
+    this.lastDablinArgs = dablinArgs;
 
     const dablin = spawn(this.config.binaries.dablin, dablinArgs, {
       detached: true,
@@ -482,6 +484,8 @@ export class StationWorker {
       lastRestartReason: this.lastRestartReason,
       lastDablinMessage: this.lastDablinMessage,
       lastFfmpegMessage: this.lastFfmpegMessage,
+      inputFormat: this.config.edi.format,
+      lastDablinArgs: this.lastDablinArgs,
       dablinPid: this.dablin?.pid ?? null,
       ffmpegPid: this.ffmpeg?.pid ?? null
     };
