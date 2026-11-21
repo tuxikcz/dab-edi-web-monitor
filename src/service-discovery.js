@@ -79,7 +79,7 @@ export async function discoverServices(config, log = console, options = {}) {
     dablin.stderr.on('data', (text) => {
       pending += stripAnsi(text);
       const lines = pending.split(/\r?\n/);
-      pending = lines.pop() ?? '';
+      pending = (lines.pop() ?? '').slice(-65536);
       for (const rawLine of lines) {
         parseServiceLine(services, rawLine.trim());
       }

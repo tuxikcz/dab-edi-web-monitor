@@ -1,276 +1,51 @@
-# DAB EDI web monitor
+# DAB PROBE
 
-Jednoduchy interní webovy prehravac DAB/DAB+ sluzeb z EDI streamu. Node.js drzi jedno TCP spojeni k multiplexu, kopiruje EDI do samostatne rizene instance DABlinu pro kazdou nakonfigurovanou stanici a FFmpeg prevadi WAV/PCM na MP3 pro prohlizec.
+Webový monitor DAB/DAB+ multiplexu z ETI-NI nebo EDI AF přes TCP s přehráváním MP3, DL/DL+, MOT Slideshow a SPI/EPG. Nejde o RF přijímač. Omezení SPI dekodéru jsou popsána v `vendor/dablin-epg/README.md`.
 
-Projekt nepouziva shellovou pipeline. Pri padu, zatuhnuti nebo ucpani DABlinu ci FFmpegu Node ukonci obe procesni skupiny a spusti cely dekodovaci retezec znovu. Systemd ma navic `KillMode=control-group`, takze po restartu sluzby nezustanou sirotci.
+Cílová platforma je Raspberry Pi 4/5 s 64bitovým Raspberry Pi OS nebo Debianem 12/13 ARM64. Raspberry Pi 3 a 32bitový systém jsou experimentální. Instalace zatím nebyla ověřena na fyzickém Raspberry Pi. Před instalací zajistěte Node.js 20 či novější v `/usr/bin/node` z důvěryhodného zdroje; výchozí verze v Debianu 12 může být starší.
 
-## Pozadavky
+## Instalace a konfigurace
 
-- Linux, doporucen Debian 12/13
-- Node.js 20 nebo novejsi
-- DABlin
-- FFmpeg s `libmp3lame`
+Stáhněte stávající projekt a spusťte instalátor ze zdrojového adresáře:
 
-Na Debianu:
-
-```bash
-apt update
-apt install nodejs dablin ffmpeg
-```
-
-## Rychly test bez instalace
-
-```bash
+```sh
+git clone https://github.com/tuxikcz/dab-edi-web-monitor.git
 cd dab-edi-web-monitor
-npm run check
-npm run test-edi
-npm start
-```
-
-Web pak posloucha na:
-
-```text
-http://IP_SERVERU:8088/
-```
-
-Pouze MP3 stream bez weboveho rozhrani spustite:
-
-```bash
-npm run stream
-```
-
-Pro jednu nakonfigurovanou stanici je stream dostupny na:
-
-```text
-http://IP_SERVERU:8088/stream.mp3
-```
-
-Pro vice stanic pouzijte ID z `config.json`:
-
-```text
-http://IP_SERVERU:8088/stream/first.mp3
-http://IP_SERVERU:8088/first.mp3
-```
-
-V externim HTML5 prehravaci pak staci:
-
-```html
-<audio controls src="http://IP_SERVERU:8088/stream.mp3"></audio>
-```
-
-Vychozi endpoint je nastaven na:
-
-```text
-93.185.96.156:15000
-```
-
-Tento endpoint posila ETI-NI data, proto ma v `config.json` nastaveno:
-
-```json
-"format": "eti"
-```
-
-Pro skutecny EDI AF vstup pouzijte `"format": "edi"`.
-
-## Nastaveni stanic
-
-Soubor `config.json` obsahuje pro prvni test vyber prvni nalezene sluzby:
-
-```json
-{
-  "id": "first",
-  "name": "Prvni sluzba multiplexu",
-  "selector": { "type": "serviceIndex", "value": 1 }
-}
-```
-
-`serviceIndex` vybira audio sluzbu podle poradi SubChId, ktere DABlin vypisuje
-u radku `audio service (SubChId ...)`. Hodnota `1` znamena nejmensi SubChId,
-`2` dalsi atd. Pri startu aplikace se kratce spusti diagnostika DABlinu, index
-se prevede na SID a vlastni stream se potom spusti stabilne pres SID.
-
-Delku teto uvodni diagnostiky lze nastavit:
-
-```json
-"stream": {
-  "discoverSeconds": 8
-}
-```
-
-Jazyk weboveho rozhrani lze nastavit v konfiguraci:
-
-```json
-"ui": {
-  "language": "cz"
-}
-```
-
-Podporovane hodnoty jsou `cz`, `en` a `de`.
-
-DL texty, DL+ metadata a MOT slideshow obrazky vyzaduji DABlin s patchem
-`patches/dablin-pad-metadata.patch`. Po instalaci patchnuteho DABlinu je lze
-zapnout v konfiguraci:
-
-```json
-"metadata": {
-  "enabled": true,
-  "slideDir": "/tmp/dab-edi-web-monitor-metadata"
-}
-```
-
-Web potom zobrazi posledni textova metadata a aktualni slideshow obrazek
-u vybrane stanice. Bez patchnuteho DABlinu ponechte `enabled` na `false`.
-
-### Patch DABlinu pro PAD metadata
-
-Bezny konzolovy DABlin posila na stdout jen audio data. Patch
-`patches/dablin-pad-metadata.patch` doplni volby:
-
-- `-j` zapisuje DL/DL+/slideshow udalosti jako JSON lines na stderr;
-- `-J <adresar>` dela to same a navic uklada posledni MOT slideshow obrazek.
-
-Priklad sestaveni na Debianu:
-
-```bash
-apt update
-apt install git build-essential cmake pkg-config libfaad-dev libmpg123-dev
-git clone https://github.com/Opendigitalradio/dablin.git /tmp/dablin-src
-cd /tmp/dablin-src
-git apply /cesta/k/dab-edi-web-monitor/patches/dablin-pad-metadata.patch
-cmake -S . -B build -DDISABLE_SDL=1
-cmake --build build --target dablin -j"$(nproc)"
-sudo install -m 0755 build/src/dablin /usr/local/bin/dablin
-```
-
-Po instalaci overte, ze DABlin zna nove volby:
-
-```bash
-/usr/local/bin/dablin -h | grep -- "-J"
-```
-
-Pak lze v konfiguraci zapnout `metadata.enabled`. Pokud aplikace po zapnuti
-skonci hlaskou typu `unrecognized option`, stale se pouziva nepatchnuty DABlin
-nebo konfigurace `binaries.dablin` ukazuje na jinou binarku.
-
-Pokud DABlin skonci hlaskou `SDL output was disabled, so PCM output must be
-selected!` i pri argumentu `-w`, byl pravdepodobne sestaven ze starsi verze
-tohoto patche. Aktualizujte patch, znovu spustte `cmake --build ...` a binarku
-znovu nainstalujte.
-
-Pro stabilni produkcni pouziti nastavte konkretni SID:
-
-```json
-{
-  "id": "hey",
-  "name": "HEY Radio",
-  "selector": { "type": "sid", "value": "0x24F8" }
-}
-```
-
-Nebo presny label:
-
-```json
-{
-  "id": "hey",
-  "name": "HEY Radio",
-  "selector": { "type": "label", "value": "HEY Radio" }
-}
-```
-
-Do pole `stations` lze pridat libovolny pocet sluzeb. Pro kazdou bezi vlastni DABlin a FFmpeg, ale vsechny dostavaji data z jednoho sdileneho EDI TCP spojeni.
-
-## Diagnostika endpointu
-
-Pouhy TCP test a objem dat:
-
-```bash
-npm run test-edi
-```
-
-Delka testu v sekundach:
-
-```bash
-TEST_SECONDS=30 npm run test-edi
-```
-
-Textova diagnostika DABlinu bez prehravani:
-
-```bash
-DISCOVER_SECONDS=30 npm run discover
-```
-
-Automaticke parsovani seznamu sluzeb neni v teto prvni verzi implementovano, protoze format konzoloveho vystupu se mezi verzemi DABlinu lisi. Webovy vyber zobrazuje sluzby zadane v `config.json`.
-
-## Systemova instalace
-
-```bash
 sudo ./install.sh
+sudo nano /etc/dab-edi-web-monitor/config.json
+sudo node /opt/dab-edi-web-monitor/scripts/check-config.js /etc/dab-edi-web-monitor/config.json
+sudo systemctl enable --now dab-probe
+sudo systemctl status dab-probe
+journalctl -u dab-probe -f
 ```
 
-Konfigurace se instaluje do:
+Instalátor přes apt zajistí závislosti, lokálně sestaví DABlin bez SDL i GTK a ověří jeho základní rozhraní. Binárka je v `/opt/dab-edi-web-monitor/bin`, systémový `/usr/local/bin/dablin` se nemění. Služba se sama neaktivuje ani nespustí. Opakované `sudo ./install.sh` zachová existující konfiguraci; po aktualizaci službu podle potřeby restartujte `sudo systemctl restart dab-probe`.
 
-```text
-/etc/dab-edi-web-monitor/config.json
+Vyplňte `edi.host`, `edi.port` a `edi.format` (`eti` nebo `edi`); bez zdroje preflight spuštění odmítne. Web standardně naslouchá jen na `127.0.0.1`, port určuje `probe.port` (8090). Vzdáleně lze použít SSH tunel `ssh -L 8090:127.0.0.1:8090 user@your-pi`. Jazyk nastavuje `ui.language` (`cz`, `en`, `de`). `metadata.enabled` společně zapíná DL/DL+ a slideshow, `epg.enabled` EPG worker. Sekce `watchdog`, `audio`, `stream` a `stations` nastavují timeouty, audio a volitelný server pevných stanic. V probe se stanice vyhledá a vybere na webu.
+
+Pro přístup z LAN zapněte `auth.enabled` a nastavte vlastní neprázdné jméno a heslo před změnou `listen.host`. Preflight odmítne LAN bez autentizace. HTTP Basic není šifrovaný: pro vzdálený přístup použijte správně nastavenou HTTPS reverse proxy. Přístup dovolte jen důvěryhodným uživatelům; probe může navazovat spojení na jimi zadané síťové cíle. Nevystavujte službu přímo internetu.
+
+## Zdroje a odstranění
+
+Za běžného provozu jeden TCP zdroj sdílí audio worker a EPG worker; discovery a detekce formátu používají krátkodobá samostatná spojení. EPG DABlin nespouští s vybranou audio službou. Počet současných stanic ovlivňuje CPU i RAM; ověřený limit pro Raspberry Pi zatím není k dispozici.
+
+```sh
+sudo systemctl disable --now dab-probe
+sudo rm -f /etc/systemd/system/dab-probe.service
+sudo systemctl daemon-reload
+sudo rm -rf /opt/dab-edi-web-monitor
 ```
 
-Prikazy:
+Konfigurace `/etc/dab-edi-web-monitor/config.json` a systémový účet zůstanou zachovány. Opakovaná instalace konfiguraci nepřepíše.
 
-```bash
-systemctl status dab-edi-web-monitor
-journalctl -u dab-edi-web-monitor -f
-systemctl restart dab-edi-web-monitor
-```
+## Licence
 
-Po zmene konfigurace:
+DAB PROBE má licenci MIT. Přiložený DABlin je GPL-3.0-or-later, knihovna FEC má samostatnou licenci LGPL-2.1. Viz `LICENSE`, `vendor/dablin-epg/COPYING`, `vendor/dablin-epg/fec/LICENSE` a hlavičky zdrojů.
 
-```bash
-systemctl restart dab-edi-web-monitor
-```
+Existující konfigurace se zachová. Před spuštěním musí `binaries.dablin` ukazovat na `/opt/dab-edi-web-monitor/bin/dablin`; preflight jinou binárku odmítne.
 
-## Watchdog
+## Aktualizace stávající instalace a vývoj
 
-Kontroluji se tri nezavisle body:
+Aktualizace přes `sudo ./install.sh` nezmění `/etc/dab-edi-web-monitor/config.json` ani nespustí žádnou jednotku. Před restartem nastavte `binaries.dablin` na `/opt/dab-edi-web-monitor/bin/dablin` a ověřte konfiguraci. Původní `dab-edi-web-monitor.service` zůstává pro rozhraní pevných stanic; `dab-probe.service` poskytuje interaktivní sondu multiplexu. Kvůli jedinému sdílenému připojení provozujte vždy jen jeden režim. Port pevných stanic určuje `listen.port`, port sondy `probe.port`. Pro LAN zapněte autentizaci podle výše uvedeného postupu.
 
-1. zda z TCP socketu prichazeji EDI data;
-2. zda DABlin vydava WAV/PCM;
-3. zda FFmpeg vydava MP3.
-
-Pri prekroceni timeoutu se shodi obe procesni skupiny pomoci `SIGTERM`, po kratkem timeoutu `SIGKILL`, a dekoder se znovu spusti. Pomaly webovy klient je odpojen, aby nemohl zaplnit pamet ani zastavit dekodovani.
-
-## Volitelne heslo
-
-V `config.json`:
-
-```json
-"auth": {
-  "enabled": true,
-  "username": "monitor",
-  "password": "zmente-me"
-}
-```
-
-Pri vystaveni do internetu je vhodne dat aplikaci za HTTPS reverse proxy. Pro nginx vypnete buffering streamu:
-
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:8088;
-    proxy_http_version 1.1;
-    proxy_buffering off;
-    proxy_request_buffering off;
-    proxy_read_timeout 1h;
-}
-```
-
-## API
-
-- `GET /api/status` – stav EDI a dekoderu
-- `GET /api/stations` – seznam nakonfigurovanych stanic
-- `GET /stream/ID.mp3` – MP3 stream
-- `POST /api/restart/ID` – rucni restart dekoderu
-- `GET /healthz` – HTTP 200, pokud je EDI online a alespon jedna stanice streamuje
-
-### SPI/EPG (rozpracováno)
-
-Zdrojový snapshot DABlinu se SPI a začleněným PAD rozhraním je v `vendor/dablin-epg`. Sestavení vyžaduje CMake, překladače C/C++, pkg-config, libmpg123 a FAAD2 (`libmpg123-dev`, `libfaad-dev`). Spusťte `scripts/build-dablin.sh`; výslednou cestu `build/dablin/src/dablin` lze nastavit jako `binaries.dablin`. Instalátor tuto verzi sestaví a nainstaluje do `/usr/local/bin/dablin`. Původní patch `patches/dablin-pad-metadata.patch` zůstává zachován.
-
-Probe po discovery spouští jeden SPI dekodér připojený ke sdílenému zdroji. `/api/epg` vrací poslední načtený průvodce a čas aktualizace; kompletní karusel může trvat delší dobu. Výměna audio stanice dekodér EPG nerestartuje. Podporována je podmnožina SPI uvedená ve `vendor/dablin-epg/README.md`. Společný živý provoz EPG, audia, DL+ a slideshow zatím nebyl ověřen.
+Pro místní vývoj zkopírujte `config.example.json` do ignorovaného `config.local.json` a nastavte jej; spusťte `CONFIG=config.local.json npm run probe`, `npm test` a `npm run check`. Sledovaný `config.json` zůstává ukázkovou konfigurací. Instalátor sestavuje přiložený DABlin se SPI a PAD metadaty; ruční patchování upstreamu ani systémový balíček DABlin nejsou potřebné.

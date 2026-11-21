@@ -8,6 +8,7 @@ import { EpgWorker } from './epg-worker.js';
 import { correctEdiFormat } from './edi-format.js';
 import { StationWorker } from './station-worker.js';
 import { discoverServices } from './service-discovery.js';
+import { checkAuth, checkRequestOrigin } from './http-safety.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, '../public');
@@ -16,7 +17,7 @@ const configPath = configArg >= 0 ? process.argv[configArg + 1] : process.env.CO
 const { config, resolvedPath } = loadConfig(configPath);
 
 const listenHost = process.env.PROBE_HOST ?? config.listen.host;
-const listenPort = Number.parseInt(process.env.PROBE_PORT ?? '8090', 10);
+const listenPort = Number.parseInt(process.env.PROBE_PORT ?? config.probe?.port ?? '8090', 10);
 if (!Number.isInteger(listenPort) || listenPort < 1 || listenPort > 65535) {
   throw new Error('PROBE_PORT musi byt cislo 1 az 65535');
 }
@@ -37,6 +38,7 @@ let worker = null;
 let epg = null;
 let activeService = null;
 let playbackChange = Promise.resolve();
+let controlBusy = false;
 
 function json(res, status, value) {
   const body = JSON.stringify(value);
@@ -50,14 +52,17 @@ function json(res, status, value) {
 
 async function readJson(req) {
   let body = '';
+  let size = 0;
   for await (const chunk of req) {
+    size += chunk.length;
+    if (size > 65536) throw new Error('Prilis velky pozadavek');
     body += chunk;
-    if (body.length > 65536) throw new Error('Prilis velky pozadavek');
   }
   return body ? JSON.parse(body) : {};
 }
 
 function staticFile(res, relativePath) {
+  if (!['probe.html', 'probe.js', 'epg-guide.js', 'style.css'].includes(relativePath)) { res.writeHead(404); res.end('Not found'); return; }
   const safePath = path.normalize(relativePath).replace(/^(\.\.[/\\])+/, '');
   const filename = path.join(publicDir, safePath);
   if (!filename.startsWith(publicDir)) {
@@ -169,8 +174,10 @@ async function doReplacePlayback(service) {
   };
   if (!source) {
     source = new EdiSource(probe.edi, log);
-    epg = new EpgWorker(source, workerConfig, log);
-    epg.start();
+    if (config.epg?.enabled !== false) {
+      epg = new EpgWorker(source, workerConfig, log);
+      epg.start();
+    }
     source.start();
   }
   worker = new StationWorker(station, source, workerConfig, log);
@@ -201,7 +208,13 @@ log.info(`konfigurace: ${resolvedPath}`);
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
 
+  let control = false;
   try {
+    if (!checkAuth(req, res, config) || !checkRequestOrigin(req, res)) return;
+    if (req.method === 'POST' && ['/api/probe', '/api/play', '/api/stop'].includes(url.pathname)) {
+      if (controlBusy) { json(res, 409, { error: 'Request in progress' }); return; }
+      control = controlBusy = true;
+    }
     if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/probe.html')) {
       staticFile(res, 'probe.html');
       return;
@@ -240,8 +253,10 @@ const server = http.createServer(async (req, res) => {
       };
       if (services.length) {
         source = new EdiSource(edi, log);
-        epg = new EpgWorker(source, discoveryConfig, log);
-        epg.start();
+        if (config.epg?.enabled !== false) {
+          epg = new EpgWorker(source, discoveryConfig, log);
+          epg.start();
+        }
         source.start();
       }
       json(res, services.length === 0 ? 404 : 200, statusPayload());
@@ -276,7 +291,7 @@ const server = http.createServer(async (req, res) => {
       try { stat = fs.statSync(filename); } catch {
         res.writeHead(404); res.end('No slide'); return;
       }
-      if (!stat.isFile()) { res.writeHead(404); res.end('No slide'); return; }
+      if (!stat.isFile() || stat.size > 4 * 1024 * 1024) { res.writeHead(404); res.end('No slide'); return; }
 
       res.writeHead(200, {
         'Content-Type': slideContentType(filename),
@@ -324,6 +339,8 @@ const server = http.createServer(async (req, res) => {
   } catch (error) {
     log.error(`[probe] ${error.stack ?? error.message}`);
     json(res, 500, { error: error.message });
+  } finally {
+    if (control) controlBusy = false;
   }
 });
 

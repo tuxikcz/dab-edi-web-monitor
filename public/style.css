@@ -367,3 +367,35 @@ pre {
     margin-bottom: 8px;
   }
 }
+
+.epg-section { margin-top: 14px; }
+.epg-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, .6fr); gap: 12px; }
+.epg-controls label { display: grid; gap: 6px; }
+.epg-state { min-height: 1.3em; color: #9aa4b2; font-size: .85rem; }
+.epg-state.stale { color: #e2bc79; }
+.epg-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); gap: 14px; }
+.epg-table-wrap { min-width: 0; overflow-x: auto; }
+.epg-table { width: 100%; border-collapse: collapse; font-size: .86rem; text-align: left; }
+.epg-table th, .epg-table td { padding: 8px; border-bottom: 1px solid #303740; vertical-align: top; }
+.epg-table th { color: #9aa4b2; font-weight: 650; }
+.epg-table td:first-child, .epg-table td:nth-child(2) { white-space: nowrap; }
+.epg-table tr.on-air { background: #172b24; }
+.epg-table tr.on-air td:first-child { box-shadow: inset 3px 0 #72bd8c; }
+.epg-table tr.selected { outline: 1px solid #76a9d4; outline-offset: -1px; }
+.epg-programme { padding: 0; border: 0; background: transparent; color: #dceaf6; text-align: left; }
+.epg-programme:hover { background: transparent; text-decoration: underline; }
+.epg-programme:focus-visible { outline: 2px solid #8abbe4; outline-offset: 3px; }
+.epg-on-air { display: block; color: #9ccbab; font-size: .75rem; }
+.epg-detail { min-width: 0; padding: 12px; border: 1px solid #2b3038; border-radius: 4px; background: #13171d; }
+.epg-detail h3 { margin: 0 0 12px; color: #9aa4b2; font-size: .85rem; }
+.epg-detail h4 { margin: 0 0 10px; color: #f0f2f5; }
+.epg-detail p { margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; font-size: .9rem; }
+@media (max-width: 680px) {
+  .epg-controls, .epg-layout { grid-template-columns: 1fr; }
+}
+/* Keep long labels, dates and touch targets usable on narrow screens. */
+.epg-table { table-layout: fixed; }
+.epg-table th:first-child, .epg-table th:nth-child(2) { width: 23%; }
+.epg-table td:first-child, .epg-table td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
+.epg-programme { min-height: 44px; width: 100%; overflow-wrap: anywhere; }
+.epg-controls input, .epg-controls select { min-width: 0; max-width: 100%; }

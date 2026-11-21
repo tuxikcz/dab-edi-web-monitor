@@ -1,0 +1,23 @@
+[Unit]
+Description=DAB PROBE ETI/EDI interactive monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=dabmonitor
+Group=dabmonitor
+WorkingDirectory=/opt/dab-edi-web-monitor
+ExecStartPre=/usr/bin/node /opt/dab-edi-web-monitor/scripts/check-config.js /etc/dab-edi-web-monitor/config.json
+ExecStart=/usr/bin/node /opt/dab-edi-web-monitor/src/probe-server.js --config /etc/dab-edi-web-monitor/config.json
+Restart=on-failure
+RestartSec=3
+KillMode=control-group
+TimeoutStopSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

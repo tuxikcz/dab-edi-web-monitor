@@ -217,8 +217,11 @@ function setupCollapsiblePanels() {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+}
 function rows(items) {
-  return items.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('');
+  return items.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join('');
 }
 
 function textRows(items) {
@@ -310,11 +313,11 @@ function renderServices(list, activeSid) {
     item.type = 'button';
     item.className = `station-option${service.sid === activeSid ? ' active' : ''}`;
     item.innerHTML = `
-      <span>${serviceName(service)}</span>
+      <span>${escapeHtml(serviceName(service))}</span>
       <small>${[
         service.sid,
         service.subChannelId !== null ? `SubChId ${service.subChannelId}` : null
-      ].filter(Boolean).join(' · ')}</small>
+      ].filter(Boolean).map(escapeHtml).join(' · ')}</small>
     `;
     item.addEventListener('click', () => play(service.sid));
     services.append(item);

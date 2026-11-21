@@ -3,3 +3,10 @@ codex
 .agents
 
 build/
+
+# Local settings and test artefacts
+/config.local.json
+/config.json.*
+/node_modules/
+*.log
+/aaaaaaa.png

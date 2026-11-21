@@ -13,7 +13,7 @@
     "reconnectMaxMs": 15000
   },
   "binaries": {
-    "dablin": "/usr/local/bin/dablin",
+    "dablin": "/opt/dab-edi-web-monitor/bin/dablin",
     "ffmpeg": "/usr/bin/ffmpeg"
   },
   "audio": {

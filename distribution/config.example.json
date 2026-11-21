@@ -1,0 +1,26 @@
+{
+  "listen": { "host": "127.0.0.1", "port": 8090 },
+  "probe": { "port": 8090 },
+  "edi": {
+    "host": "",
+    "port": 14000,
+    "format": "eti",
+    "connectTimeoutMs": 5000,
+    "dataTimeoutMs": 7000,
+    "reconnectMinMs": 1000,
+    "reconnectMaxMs": 15000
+  },
+  "binaries": { "dablin": "/opt/dab-probe/bin/dablin", "ffmpeg": "/usr/bin/ffmpeg" },
+  "audio": { "bitrate": "128k", "sampleRate": 48000, "channels": 2 },
+  "stream": { "discoverSeconds": 8 },
+  "watchdog": {
+    "startupGraceMs": 12000, "pcmTimeoutMs": 8000, "mp3TimeoutMs": 12000,
+    "checkIntervalMs": 1000, "restartDelayMs": 1500, "killTimeoutMs": 1500,
+    "maxInputBufferBytes": 2097152, "maxClientBufferBytes": 1048576
+  },
+  "auth": { "enabled": false, "username": "", "password": "" },
+  "ui": { "language": "en" },
+  "metadata": { "enabled": true, "slideDir": "/tmp/dab-probe-metadata" },
+  "epg": { "enabled": true },
+  "stations": [ { "id": "first", "name": "First service", "selector": { "type": "first" } } ]
+}

@@ -495,8 +495,10 @@ export class StationWorker {
     const filename = this.currentMetadata.slide?.file;
     const metadataDir = this.#metadataDir();
     if (!filename || !metadataDir) return null;
-    const resolved = path.resolve(filename);
-    const root = path.resolve(metadataDir);
-    return resolved.startsWith(`${root}${path.sep}`) || resolved === root ? resolved : null;
+    try {
+      const root = fs.realpathSync(metadataDir);
+      const resolved = fs.realpathSync(filename);
+      return resolved.startsWith(`${root}${path.sep}`) ? resolved : null;
+    } catch { return null; }
   }
 }

@@ -118,6 +118,9 @@ export function loadConfig(configPath) {
 
   config.auth ??= { enabled: false };
   config.auth.enabled = Boolean(config.auth.enabled);
+  if (config.auth.enabled && (typeof config.auth.username !== 'string' || !config.auth.username || typeof config.auth.password !== 'string' || !config.auth.password)) {
+    fail('auth.username a auth.password jsou povinne');
+  }
 
   config.ui ??= {};
   config.ui.language ??= 'cz';

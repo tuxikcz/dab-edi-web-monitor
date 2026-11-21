@@ -8,6 +8,7 @@ Type=simple
 User=dabmonitor
 Group=dabmonitor
 WorkingDirectory=/opt/dab-edi-web-monitor
+ExecStartPre=/usr/bin/node /opt/dab-edi-web-monitor/scripts/check-config.js /etc/dab-edi-web-monitor/config.json
 ExecStart=/usr/bin/node /opt/dab-edi-web-monitor/src/server.js --config /etc/dab-edi-web-monitor/config.json
 Restart=always
 RestartSec=2

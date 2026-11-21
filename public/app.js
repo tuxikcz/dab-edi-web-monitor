@@ -186,8 +186,11 @@ function bytes(value) {
   return `${number.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+}
 function rows(items) {
-  return items.map(([key, value]) => `<dt>${key}</dt><dd>${value}</dd>`).join('');
+  return items.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join('');
 }
 
 function textRows(items) {
@@ -261,7 +264,7 @@ async function loadStations() {
   const response = await fetch('/api/stations', { cache: 'no-store' });
   stations = await response.json();
   stationSelect.innerHTML = stations.map((station) =>
-    `<option value="${station.id}">${station.name}</option>`
+    `<option value="${escapeHtml(station.id)}">${escapeHtml(station.name)}</option>`
   ).join('');
 }
 

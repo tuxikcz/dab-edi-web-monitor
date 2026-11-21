@@ -56,11 +56,17 @@ export class EpgWorker {
     input.write(chunk);
   }
   restart() {
-    if (this.child) this.child.kill('SIGTERM');
+    if (!this.child || this.child.killed) return;
+    const child = this.child;
+    child.kill('SIGTERM');
+    const timer = setTimeout(() => child.kill('SIGKILL'), this.config.watchdog.killTimeoutMs);
+    timer.unref();
+    child.once('close', () => clearTimeout(timer));
   }
   read() {
     try {
       const stat = fs.statSync(this.file);
+      if (stat.size > 8 * 1024 * 1024) throw new Error('EPG exceeds size limit');
       if (stat.mtimeMs === this.lastMtime) return;
       const data = JSON.parse(fs.readFileSync(this.file, 'utf8'));
       if (!Array.isArray(data.services) || !Array.isArray(data.programmes)) throw new Error('Invalid EPG');

@@ -1,0 +1,9 @@
+{
+  "name": "dab-probe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Web-based DAB/DAB+ ETI/EDI multiplex probe",
+  "engines": { "node": ">=20" },
+  "scripts": { "start": "node src/probe-server.js --config /etc/dab-probe/config.json", "check": "node --check src/probe-server.js && node --check public/epg-guide.js" }
+}

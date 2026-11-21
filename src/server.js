@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { timingSafeEqual } from 'node:crypto';
 import { loadConfig } from './config.js';
 import { EdiSource } from './edi-source.js';
+import { checkRequestOrigin } from './http-safety.js';
 import { EpgWorker } from './epg-worker.js';
 import { correctEdiFormat } from './edi-format.js';
 import { StationWorker } from './station-worker.js';
@@ -98,8 +99,8 @@ log.info(`konfigurace: ${resolvedPath}`);
 config.edi = await correctEdiFormat(config.edi, log);
 const stations = await resolveServiceIndexSelectors(config, config.stations, log);
 const source = new EdiSource(config.edi, log);
-const epg = new EpgWorker(source, config, log);
-epg.start();
+const epg = config.epg?.enabled === false ? null : new EpgWorker(source, config, log);
+epg?.start();
 const workers = new Map();
 for (const station of stations) {
   const worker = new StationWorker(station, source, config, log);
@@ -112,6 +113,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
 
   if (url.pathname !== '/healthz' && !checkAuth(req, res)) return;
+  if (!checkRequestOrigin(req, res)) return;
 
   if (req.method === 'GET' && url.pathname === '/healthz') {
     const sourceOk = source.status().connected;
@@ -130,7 +132,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/epg') { json(res, 200, epg.status()); return; }
+  if (req.method === 'GET' && url.pathname === '/api/epg') { json(res, 200, epg?.status() ?? { updatedAt: null, error: null, guide: null }); return; }
 
   if (req.method === 'GET' && url.pathname === '/api/stations') {
     json(res, 200, stations.map(({ id, name, selector }) => ({ id, name, selector })));
@@ -156,7 +158,7 @@ const server = http.createServer((req, res) => {
     try { stat = fs.statSync(filename); } catch {
       res.writeHead(404); res.end('No slide'); return;
     }
-    if (!stat.isFile()) { res.writeHead(404); res.end('No slide'); return; }
+    if (!stat.isFile() || stat.size > 4 * 1024 * 1024) { res.writeHead(404); res.end('No slide'); return; }
 
     res.writeHead(200, {
       'Content-Type': slideContentType(filename),
@@ -219,7 +221,7 @@ async function shutdown(signal) {
   stopping = true;
   log.info(`ukonceni po ${signal}`);
   server.close();
-  epg.stop();
+  epg?.stop();
   source.stop();
   await Promise.all([...workers.values()].map((worker) => worker.shutdown()));
   setTimeout(() => process.exit(0), 100).unref();
