@@ -10,3 +10,8 @@ build/
 /node_modules/
 *.log
 /aaaaaaa.png
+# Development artefacts
+/codex
+/.codex/
+/.agents/
+/vystup
