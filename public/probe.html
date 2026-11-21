@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DAB EDI probe</title>
-  <link rel="stylesheet" href="/style.css?v=20260713-1">
+  <link rel="stylesheet" href="/style.css?v=20261121-epg">
 </head>
 <body>
   <main>
@@ -93,8 +93,31 @@
         </div>
       </article>
     </section>
-    <section><article><h2>EPG</h2><p id="epgState"></p><div id="epgGuide"></div></article></section>
+    <section class="epg-section">
+      <article aria-labelledby="epgTitle">
+        <h2 id="epgTitle">EPG</h2>
+        <div class="epg-controls">
+          <label><span id="epgStationLabel">Stanice</span><select id="epgStation" disabled></select></label>
+          <label><span id="epgDayLabel">Den</span><input id="epgDay" type="date"></label>
+        </div>
+        <p id="epgState" class="epg-state" role="status"></p>
+        <div class="epg-layout">
+          <div class="epg-table-wrap">
+            <table class="epg-table">
+              <thead><tr><th id="epgStartHeading" scope="col">Začátek</th><th id="epgEndHeading" scope="col">Konec</th><th id="epgNameHeading" scope="col">Pořad</th></tr></thead>
+              <tbody id="epgRows"></tbody>
+            </table>
+            <p id="epgEmpty" class="empty"></p>
+          </div>
+          <section class="epg-detail" aria-labelledby="epgDetailTitle">
+            <h3 id="epgDetailTitle">Detail pořadu</h3>
+            <div id="epgDetail"></div>
+          </section>
+        </div>
+      </article>
+    </section>
   </main>
   <script src="/probe.js?v=20260713-4"></script>
+  <script type="module" src="/epg-guide.js?v=20261121-epg"></script>
 </body>
 </html>
