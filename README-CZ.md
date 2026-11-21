@@ -268,3 +268,9 @@ location / {
 - `GET /stream/ID.mp3` – MP3 stream
 - `POST /api/restart/ID` – rucni restart dekoderu
 - `GET /healthz` – HTTP 200, pokud je EDI online a alespon jedna stanice streamuje
+
+### SPI/EPG (rozpracováno)
+
+Zdrojový snapshot DABlinu se SPI a začleněným PAD rozhraním je v `vendor/dablin-epg`. Sestavení vyžaduje CMake, překladače C/C++, pkg-config, libmpg123 a FAAD2 (`libmpg123-dev`, `libfaad-dev`). Spusťte `scripts/build-dablin.sh`; výslednou cestu `build/dablin/src/dablin` lze nastavit jako `binaries.dablin`. Instalátor tuto verzi sestaví a nainstaluje do `/usr/local/bin/dablin`. Původní patch `patches/dablin-pad-metadata.patch` zůstává zachován.
+
+Probe po discovery spouští jeden SPI dekodér připojený ke sdílenému zdroji. `/api/epg` vrací poslední načtený průvodce a čas aktualizace; kompletní karusel může trvat delší dobu. Výměna audio stanice dekodér EPG nerestartuje. Podporována je podmnožina SPI uvedená ve `vendor/dablin-epg/README.md`. Společný živý provoz EPG, audia, DL+ a slideshow zatím nebyl ověřen.

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, normalizeEdiHost } from './config.js';
 import { EdiSource } from './edi-source.js';
+import { EpgWorker } from './epg-worker.js';
 import { correctEdiFormat } from './edi-format.js';
 import { StationWorker } from './station-worker.js';
 import { discoverServices } from './service-discovery.js';
@@ -33,8 +34,9 @@ let probe = {
 };
 let source = null;
 let worker = null;
+let epg = null;
 let activeService = null;
-let stoppingPlayback = Promise.resolve();
+let playbackChange = Promise.resolve();
 
 function json(res, status, value) {
   const body = JSON.stringify(value);
@@ -136,6 +138,8 @@ async function correctProbeFormat(edi) {
 async function stopPlayback() {
   const currentWorker = worker;
   const currentSource = source;
+  if (epg) epg.stop();
+  epg = null;
   worker = null;
   source = null;
   activeService = null;
@@ -143,11 +147,15 @@ async function stopPlayback() {
   if (currentWorker) await currentWorker.shutdown();
 }
 
-async function replacePlayback(service) {
-  stoppingPlayback = stoppingPlayback.then(stopPlayback, stopPlayback);
-  await stoppingPlayback;
+function replacePlayback(service) {
+  const change = playbackChange.then(() => doReplacePlayback(service));
+  playbackChange = change.catch(() => {});
+  return change;
+}
 
-  probe.edi = await correctProbeFormat(probe.edi);
+async function doReplacePlayback(service) {
+  if (worker) await worker.shutdown();
+  worker = null;
 
   const station = {
     id: 'probe',
@@ -159,11 +167,15 @@ async function replacePlayback(service) {
     ...config,
     edi: probe.edi
   };
-  source = new EdiSource(probe.edi, log);
+  if (!source) {
+    source = new EdiSource(probe.edi, log);
+    epg = new EpgWorker(source, workerConfig, log);
+    epg.start();
+    source.start();
+  }
   worker = new StationWorker(station, source, workerConfig, log);
   activeService = service;
   worker.start();
-  source.start();
 }
 
 function statusPayload() {
@@ -195,6 +207,11 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === 'GET' && url.pathname === '/api/epg') {
+      json(res, 200, epg?.status() ?? { updatedAt: null, error: null, guide: null });
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/status') {
       json(res, 200, statusPayload());
       return;
@@ -221,6 +238,12 @@ const server = http.createServer(async (req, res) => {
         discoveredAt: Date.now(),
         error: services.length === 0 ? 'Discovery nenasel zadne audio sluzby' : null
       };
+      if (services.length) {
+        source = new EdiSource(edi, log);
+        epg = new EpgWorker(source, discoveryConfig, log);
+        epg.start();
+        source.start();
+      }
       json(res, services.length === 0 ? 404 : 200, statusPayload());
       return;
     }

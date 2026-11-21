@@ -258,3 +258,9 @@ location / {
 - `GET /stream/ID.mp3` - MP3 stream
 - `POST /api/restart/ID` - manual decoder restart
 - `GET /healthz` - HTTP 200 if EDI is online and at least one station is streaming
+
+### SPI/EPG (work in progress)
+
+The SPI-enabled DABlin source snapshot and PAD metadata integration are in `vendor/dablin-epg`. Build with `scripts/build-dablin.sh` (requires CMake, C/C++ compiler, pkg-config, libmpg123 and FAAD2 development packages) and configure `binaries.dablin` to point to `build/dablin/src/dablin`. The installer builds and installs this binary at `/usr/local/bin/dablin`. The original PAD patch remains in `patches/`.
+
+After discovery the probe starts one SPI decoder fed by the shared source. `/api/epg` returns the last complete guide and its update time; reception may require a complete carousel. Switching audio services keeps the EPG decoder running. SPI support is limited as described in `vendor/dablin-epg/README.md`. Concurrent EPG, audio, DL+ and slideshow reception has not yet been verified live.

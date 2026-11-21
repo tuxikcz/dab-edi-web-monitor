@@ -11,8 +11,9 @@
     "start": "node src/server.js",
     "stream": "node src/stream-server.js",
     "probe": "node src/probe-server.js",
-    "check": "node --check src/server.js && node --check src/stream-server.js && node --check src/probe-server.js && node --check src/service-discovery.js && node --check src/edi-source.js && node --check src/edi-format.js && node --check src/station-worker.js && node --check src/config.js && node --check scripts/test-edi.js && node --check scripts/discover.js && node --check public/app.js && node --check public/probe.js",
+    "check": "node --check src/server.js && node --check src/stream-server.js && node --check src/probe-server.js && node --check src/service-discovery.js && node --check src/edi-source.js && node --check src/edi-format.js && node --check src/station-worker.js && node --check src/config.js && node --check scripts/test-edi.js && node --check scripts/discover.js && node --check public/app.js && node --check public/probe.js && node --check src/epg-worker.js",
     "test-edi": "node scripts/test-edi.js",
-    "discover": "node scripts/discover.js"
+    "discover": "node scripts/discover.js",
+    "test": "node --test tests/*.test.js"
   }
 }

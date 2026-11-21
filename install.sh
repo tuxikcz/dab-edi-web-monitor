@@ -6,13 +6,16 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-for cmd in node dablin ffmpeg; do
+for cmd in node ffmpeg cmake pkg-config; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "Chybi program: $cmd" >&2
     echo "Na Debianu obvykle: apt install nodejs dablin ffmpeg" >&2
     exit 1
   fi
 done
+
+./scripts/build-dablin.sh
+install -o root -g root -m 0755 "${DABLIN_BUILD_DIR:-$(pwd)/build/dablin}/src/dablin" /usr/local/bin/dablin
 
 id dabmonitor >/dev/null 2>&1 || useradd --system --home /nonexistent --shell /usr/sbin/nologin dabmonitor
 install -d -o root -g root -m 0755 /opt/dab-edi-web-monitor /etc/dab-edi-web-monitor
